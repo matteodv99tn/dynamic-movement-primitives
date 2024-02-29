@@ -28,13 +28,6 @@ void MultiDofPeriodicDmp::setObservationPeriod(const double T) {
     _tau = T / (2.0 * M_PI);
 }
 
-void MultiDofPeriodicDmp::setSamplingPeriod(const double dt) { _dt = dt; }
-
-void MultiDofPeriodicDmp::setTau(const double tau) {
-    _tau = tau;
-    return;
-}
-
 void MultiDofPeriodicDmp::resetWeights() {
     _w = Eigen::MatrixXd::Zero(_N(), _n_dof);
     _P.resize(_n_dof);
@@ -73,8 +66,6 @@ void MultiDofPeriodicDmp::batchLearn(
 
     Eigen::MatrixXd fd = ddy * std::pow(_tau, 2) - _alpha * (-_beta * y - dy * _tau);
     _w                 = Phi.colPivHouseholderQr().solve(fd);
-
-    _fd_store = fd;
 }
 
 double MultiDofPeriodicDmp::timeToPhase(const double& t) const { return t * _Omega(); }
@@ -94,8 +85,6 @@ void MultiDofPeriodicDmp::setInitialConditions(
 void MultiDofPeriodicDmp::step() {
     static std::size_t i = 0;
     _dz_dt = _Omega() * (_alpha * (-_beta * _y - _z) + (*_basis)(_phi, _w));
-    // _dz_dt = _Omega() * (_alpha * (-_beta * _y - _z) + _fd_store.row(i).transpose());
-    // i++;
     _z += _dz_dt * _dt;
     _y += _Omega() *  _z * _dt;
     _phi += _Omega() * _dt;

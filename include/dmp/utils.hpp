@@ -32,6 +32,7 @@ namespace dmp {
     }  // namespace traindatacolumn
 
     Eigen::MatrixXd loadTrainingTrajectory();
+    Eigen::MatrixXd loadTrainingTrajectory(const std::string& file_path);
 
     Eigen::VectorXd getTimeVector(const Eigen::MatrixXd& trajectory);
     std::optional<Eigen::MatrixXd> getAxisTrajectory(const Eigen::MatrixXd& trajectory, const char axis);

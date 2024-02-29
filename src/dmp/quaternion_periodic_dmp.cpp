@@ -25,10 +25,6 @@ QuaternionPeriodicDmp::QuaternionPeriodicDmp(
         _dmp(basis, 3, alpha, lambda, dt) {
     _q  = Eigen::Quaterniond::Identity();
     _g  = Eigen::Quaterniond::Identity();
-    _dt = dt;
-
-    _alpha = alpha;
-    _beta  = _alpha / 4;
 }
 
 void QuaternionPeriodicDmp::setObservationPeriod(const double T) {
@@ -75,11 +71,6 @@ void QuaternionPeriodicDmp::batchLearn(
         _tmp         = dmp::logarithmic_map(_g, q_tmp);
         q_log.row(i) = -2 * _tmp;
     }
-
-    _fd_store = alpha * std::pow(_dmp._tau, 2) -
-                _dmp._alpha * (-_dmp._beta * q_log - omega * _dmp._tau);
-
-
     _dmp.batchLearn(phi, q_log, omega, alpha);
 }
 
@@ -88,7 +79,7 @@ void QuaternionPeriodicDmp::step() {
 
     const Eigen::Vector3d omega = _dmp.getVelocityState();
     Eigen::Quaterniond    q_old = _q;
-    _q                          = dmp::exponential_map(0.5 * _dt * omega, _q);
+    _q                          = dmp::exponential_map(0.5 * _dt() * omega, _q);
 
     if (_q.w() * q_old.w() + _q.vec().dot(q_old.vec()) < 0) {
         std::cout << "Jumping" << std::endl;

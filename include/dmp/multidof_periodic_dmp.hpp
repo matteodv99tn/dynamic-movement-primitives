@@ -20,9 +20,7 @@ namespace dmp {
         );
 
         void setObservationPeriod(const double T);
-        void setSamplingPeriod(const double dt);
-        void setTau(const double tau);
-
+        
         void resetWeights();
 
         void incrementalLearn(
@@ -31,8 +29,6 @@ namespace dmp {
                 const Eigen::VectorXd& dy,
                 const Eigen::VectorXd& ddy
         );
-        // void incrementalLearn(const double& phi, const Eigen::Vector3d& y_data);
-
 
         void batchLearn(
                 const Eigen::VectorXd& phi,
@@ -59,15 +55,13 @@ namespace dmp {
         Eigen::VectorXd getZ() const;
         double getOmega() const;
 
-    public:
-    // private:
+    private:
         std::size_t _n_dof;
 
         // Weights for the basis function
         Eigen::VectorXd              _r;
         Eigen::MatrixXd              _w;
         std::vector<Eigen::MatrixXd> _P;
-        Eigen::MatrixXd              _fd_store;
 
         // Internal state for integration
         Eigen::VectorXd _y;

@@ -26,7 +26,6 @@ add_library(dmp STATIC
     src/dmp/periodic_dmp.cpp
     src/dmp/multidof_periodic_dmp.cpp
     src/dmp/quaternion_periodic_dmp.cpp
-    src/dmp/quaternion_periodic_dmp_v2.cpp
     src/dmp/utils.cpp
 )
 target_link_libraries(dmp Eigen3::Eigen range-v3)

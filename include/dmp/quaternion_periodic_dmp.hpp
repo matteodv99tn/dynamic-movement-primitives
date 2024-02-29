@@ -49,7 +49,6 @@ namespace dmp {
         );
 
         void   step();
-        void   step(const Eigen::Vector3d& omega);
         void   integration_quat();
         double getPhase() const;
 
@@ -58,16 +57,16 @@ namespace dmp {
         Eigen::VectorXd    getAngularAcceleration() const;
         Eigen::Vector3d    getLogarithm() const;
 
-        Eigen::MatrixXd q_log;
 
     public:
         // private:
         double              _alpha, _beta;
         MultiDofPeriodicDmp _dmp;
         Eigen::Quaterniond  _q, _g;
-        Eigen::Vector3d     _do, _z, _y;
-        double              _dt;
-        Eigen::MatrixXd     _fd_store;
+        Eigen::MatrixXd q_log;
+
+        inline double _dt() const { return _dmp.getSamplingPeriod(); }
+
     };
 }  // namespace dmp
 

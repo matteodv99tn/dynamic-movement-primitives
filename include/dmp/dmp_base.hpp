@@ -12,8 +12,14 @@ namespace dmp {
                 const double                    lambda = 0.999,
                 const double                    dt     = 0.002);
 
-    // protected:
-    public:
+        double getAlpha() const;
+        double getBeta() const;
+        double getSamplingPeriod() const;
+        double getTau() const;
+        void setSamplingPeriod(const double& dt);
+        void setTau(const double& tau);
+
+    protected:
         BasisFunction::SharedPtr _basis;
         double                   _alpha, _beta;
         double                   _lambda;
