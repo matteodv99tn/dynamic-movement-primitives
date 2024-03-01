@@ -35,19 +35,8 @@ int main() {
         Hist.row(i).head(3) = dmp.getPositionState().transpose();
         Hist.row(i).segment(3, 3) = dmp.getVelocityState().transpose();
         Hist.row(i).tail(3) = dmp.getAccelerationState().transpose();
-
-        // if (i < time.size()) {
-        //     x_dmp.incrementalLearn(phi(i), x_traj.row(i));
-        //     y_dmp.incrementalLearn(phi(i), y_traj.row(i));
-        //     z_dmp.incrementalLearn(phi(i), z_traj.row(i));
-        // }
         dmp.step();
     }
-
-    std::ofstream file(dmp::test::results_directory + "/3dof_dmp_batch.csv");
-    file << "x,y,z,vx,vy,vz,ax,ay,az\n";
-    file << dmp::dumpToCsv(Hist);
-    file.close();
 
     // Plotting
     Gnuplot gp;
