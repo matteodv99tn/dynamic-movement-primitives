@@ -8,9 +8,14 @@
 
 #include "range/v3/all.hpp"
 
+
 Eigen::MatrixXd dmp::loadTrainingTrajectory() {
     const std::string home_path = std::getenv("HOME");
     const std::string file_path = home_path + "/dmps/data/end_effector_states.csv";
+    return dmp::loadTrainingTrajectory(file_path);
+}
+
+Eigen::MatrixXd dmp::loadTrainingTrajectory(const std::string& file_path) {
     const std::size_t num_cols  = dmp::traindatacolumn::count;
 
     std::ifstream in(file_path);

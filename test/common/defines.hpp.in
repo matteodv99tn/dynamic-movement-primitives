@@ -7,6 +7,7 @@ namespace dmp::test{
 const std::string test_directory = "@CMAKE_CURRENT_SOURCE_DIR@";
 const std::string data_directory = "@CMAKE_CURRENT_SOURCE_DIR@/data";
 const std::string csv_path = "@CMAKE_CURRENT_SOURCE_DIR@/data/training_data.csv";
+const std::string results_directory = "@CMAKE_CURRENT_SOURCE_DIR@/data/results";
 }
 
 #endif // DMP_TEST_DEFINES_HPP__

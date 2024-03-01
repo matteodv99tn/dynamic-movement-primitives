@@ -14,7 +14,14 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/ericniebler/range-v3.git
     GIT_TAG 0.12.0
     )
-FetchContent_MakeAvailable(range-v3)
+set(GnuPlotIostream_BuildTests OFF)
+set(GnuPlotIostream_BuildExamples OFF)
+FetchContent_Declare(
+    GnuPlot_iostream
+    GIT_REPOSITORY https://github.com/dstahlke/gnuplot-iostream.git
+    )
+    
+FetchContent_MakeAvailable(range-v3 GnuPlot_iostream)
 
 find_package(Eigen3 REQUIRED)
 
