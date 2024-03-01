@@ -49,6 +49,7 @@ namespace dmp {
         void   step();
         double getPhase() const;
 
+        void setPositionState(const Eigen::VectorXd& y);
         Eigen::VectorXd getPositionState() const;
         Eigen::VectorXd getVelocityState() const;
         Eigen::VectorXd getAccelerationState() const;

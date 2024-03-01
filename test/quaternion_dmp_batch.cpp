@@ -18,7 +18,7 @@ int main() {
     Eigen::MatrixXd alpha_traj = dmp::getAngularAccelerationTrajectory(trajectory);
     Eigen::VectorXd time       = dmp::getTimeVector(trajectory);
 
-    auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(15);
+    auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(50);
 
     dmp::QuaternionPeriodicDmp dmp(basis);
     dmp.setObservationPeriod(time(time.size() - 1));
@@ -28,7 +28,7 @@ int main() {
     Eigen::Quaterniond q0(q0_elems);
     dmp.setInitialConditions(q0, omega_traj.row(0));
 
-    std::size_t        t_horizon = time.size() * 3;
+    std::size_t        t_horizon = time.size() * 1;
     Eigen::MatrixXd    Qhist(t_horizon, 4);
     Eigen::MatrixXd    Lhist(t_horizon, 3);
     Eigen::Quaterniond q;
@@ -148,6 +148,24 @@ int main() {
     gp3.send1d(pitch_des);
     gp3.send1d(yaw);
     gp3.send1d(yaw_des);
+
+    Gnuplot gp4;
+
+    std::vector<double> alpha_x      = dmp::test::toStdVector(alpha_traj.col(0));
+    std::vector<double> alpha_y      = dmp::test::toStdVector(alpha_traj.col(1));
+    std::vector<double> alpha_z      = dmp::test::toStdVector(alpha_traj.col(2));
+
+    gp4 << "set title 'Quaternion DMP - Angular acceleration - Batch Learning'\n";
+    gp4 << "set xlabel 'Time (ticks)'\n";
+    gp4 << "set ylabel 'Quaternion'\n";
+    gp4 << "plot '-' with lines title 'domega_x' linecolor 1";
+    gp4 << ", '-' with lines title 'domega_y' linecolor 2";
+    gp4 << ", '-' with lines title 'domega_z' linecolor 3";
+    gp4 << "\n";
+
+    gp4.send1d(alpha_x);
+    gp4.send1d(alpha_y);
+    gp4.send1d(alpha_z);
 
     return 0;
 }

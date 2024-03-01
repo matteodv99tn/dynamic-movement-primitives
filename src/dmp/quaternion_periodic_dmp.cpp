@@ -78,6 +78,8 @@ void QuaternionPeriodicDmp::step() {
         std::cout << "Jumping" << std::endl;
         _q.coeffs() = -_q.coeffs();
     }
+
+    _dmp.setPositionState(-2 * dmp::logarithmic_map(_g, _q));
 }
 
 void QuaternionPeriodicDmp::setInitialConditions(

@@ -92,6 +92,9 @@ void MultiDofPeriodicDmp::step() {
 
 double MultiDofPeriodicDmp::getPhase() const { return _phi; }
 
+void MultiDofPeriodicDmp::setPositionState(const Eigen::VectorXd& y){
+    _y = y;
+}
 Eigen::VectorXd MultiDofPeriodicDmp::getPositionState() const { return _y; }
 
 Eigen::VectorXd MultiDofPeriodicDmp::getVelocityState() const { return _z * _Omega(); }
