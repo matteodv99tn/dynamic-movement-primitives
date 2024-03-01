@@ -20,8 +20,13 @@ FetchContent_Declare(
     GnuPlot_iostream
     GIT_REPOSITORY https://github.com/dstahlke/gnuplot-iostream.git
     )
-    
-FetchContent_MakeAvailable(range-v3 GnuPlot_iostream)
+FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v3.5.2
+    )
+
+FetchContent_MakeAvailable(range-v3 GnuPlot_iostream Catch2)
 
 find_package(Eigen3 REQUIRED)
 
@@ -36,7 +41,7 @@ add_library(dmp STATIC
     src/dmp/utils.cpp
 )
 target_link_libraries(dmp Eigen3::Eigen range-v3)
-target_include_directories(dmp 
+target_include_directories(dmp
     PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include
     )
 

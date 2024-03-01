@@ -11,3 +11,6 @@ foreach(CPP_FILE ${CPP_FILES})
     target_include_directories(${EXECUTABLE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(${EXECUTABLE_NAME} dmp gnuplot_iostream)
 endforeach()
+
+
+add_subdirectory(unit_test)

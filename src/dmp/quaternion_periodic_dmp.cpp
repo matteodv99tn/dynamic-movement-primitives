@@ -63,14 +63,7 @@ void QuaternionPeriodicDmp::batchLearn(
         const Eigen::MatrixXd& omega,
         const Eigen::MatrixXd& alpha
 ) {
-    q_log = Eigen::MatrixXd::Zero(q.rows(), 3);
-    Eigen::Vector3d _tmp;
-    for (int i = 0; i < q.rows(); ++i) {
-        Eigen::Vector4d    q_tmp_value = q.row(i);
-        Eigen::Quaterniond q_tmp(q_tmp_value);
-        _tmp         = dmp::logarithmic_map(_g, q_tmp);
-        q_log.row(i) = -2 * _tmp;
-    }
+    Eigen::MatrixXd q_log = computeLogarithms(q);
     _dmp.batchLearn(phi, q_log, omega, alpha);
 }
 
@@ -108,33 +101,14 @@ Eigen::Vector3d QuaternionPeriodicDmp::getLogarithm() const {
     return _dmp.getPositionState();
 }
 
-/*
-void QuaternionPeriodicDmp::integration_quat() {
-    Eigen::Vector3d log_tmp = quaternion_log(_g, _q);
-    double          *log_q = log_tmp.data();
-
-    for (int i = 0; i < 3; ++i) {
-        _do[i] = _alpha * (_beta * 2 * log_q[i] - _z[i]) + _f[i];
-        // temporal scaling
-        _do[i] = _do[i] / _tau[i];
-        _z[i]  = _z[i] + _do[i] * _dt;
+Eigen::MatrixXd QuaternionPeriodicDmp::computeLogarithms(const Eigen::MatrixXd& Qs){
+    Eigen::MatrixXd q_log = Eigen::MatrixXd::Zero(Qs.rows(), 3);
+    Eigen::Vector3d _tmp;
+    for (int i = 0; i < Qs.rows(); ++i) {
+        Eigen::Vector4d    q_tmp_value = Qs.row(i);
+        Eigen::Quaterniond q_tmp(q_tmp_value);
+        _tmp         = dmp::logarithmic_map(_g, q_tmp);
+        q_log.row(i) = -2 * _tmp;
     }
-    // integration of quaternions
-    double norm_do = 0;
-    vnorm(_do, norm_do);
-    if (norm_do > 1.0e-12) {
-        double tmp[]    = {_z[0] / _tau[0], _z[1] / _tau[1], _z[2] / _tau[2]};
-        double norm_tmp = 0;
-        vnorm(tmp, norm_tmp);
-        double norm_z = 0;
-        vnorm(_z, norm_z);
-        double dq[] = {0, 0, 0, 0};
-        dq[0]       = cos(norm_tmp * _dt / 2);
-        double ss   = sin(norm_tmp * _dt / 2);
-        for (int i = 0; i < _dof; ++i) { dq[i + 1] = ss * _z[i] / norm_z; }
-        double q[] = {0, 0, 0, 0};
-        quat_mult(dq, _y, q);
-        for (int i = 0; i < 4; ++i) { _y[i] = q[i]; }
-    }
+    return q_log;
 }
-*/

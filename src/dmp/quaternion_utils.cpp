@@ -2,8 +2,6 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <Eigen/src/Core/Matrix.h>
-#include <Eigen/src/Geometry/Quaternion.h>
 #include <cmath>
 
 Eigen::Vector3d dmp::logarithmic_map(const Eigen::Quaterniond& q) {

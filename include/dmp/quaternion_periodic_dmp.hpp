@@ -57,13 +57,14 @@ namespace dmp {
         Eigen::VectorXd    getAngularAcceleration() const;
         Eigen::Vector3d    getLogarithm() const;
 
+        Eigen::MatrixXd computeLogarithms(const Eigen::MatrixXd& Qs);
+
 
     public:
         // private:
         double              _alpha, _beta;
         MultiDofPeriodicDmp _dmp;
         Eigen::Quaterniond  _q, _g;
-        Eigen::MatrixXd q_log;
 
         inline double _dt() const { return _dmp.getSamplingPeriod(); }
 
