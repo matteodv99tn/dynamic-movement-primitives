@@ -18,7 +18,7 @@ int main() {
     Eigen::MatrixXd alpha_traj = dmp::getAngularAccelerationTrajectory(trajectory);
     Eigen::VectorXd time       = dmp::getTimeVector(trajectory);
 
-    auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(50);
+    auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(20);
 
     dmp::QuaternionPeriodicDmp dmp(basis);
     dmp.setObservationPeriod(time(time.size() - 1));
@@ -78,7 +78,8 @@ int main() {
     gp.send1d(qw_des);
 
 
-    Gnuplot gp2;
+#if 0
+    Gnuplot gp2; // Quaternion logarithms
 
     Eigen::MatrixXd     log_des  = dmp.computeLogarithms(q_traj);
     std::vector<double> logx     = dmp::test::toStdVector(Lhist.col(0));
@@ -105,8 +106,10 @@ int main() {
     gp2.send1d(logy_des);
     gp2.send1d(logz);
     gp2.send1d(logz_des);
+#endif
 
-    Gnuplot gp3;
+#if 0
+    Gnuplot gp3; // RPY
 
     Eigen::MatrixXd rpy     = Eigen::MatrixXd::Zero(t_horizon, 3);
     Eigen::MatrixXd rpy_des = Eigen::MatrixXd::Zero(q_traj.rows(), 3);
@@ -148,8 +151,10 @@ int main() {
     gp3.send1d(pitch_des);
     gp3.send1d(yaw);
     gp3.send1d(yaw_des);
+#endif
 
-    Gnuplot gp4;
+#if 0
+    Gnuplot gp4; // Angular acceleration
 
     std::vector<double> alpha_x      = dmp::test::toStdVector(alpha_traj.col(0));
     std::vector<double> alpha_y      = dmp::test::toStdVector(alpha_traj.col(1));
@@ -166,6 +171,38 @@ int main() {
     gp4.send1d(alpha_x);
     gp4.send1d(alpha_y);
     gp4.send1d(alpha_z);
+#endif
+
+    Gnuplot gp5;
+
+    Eigen::MatrixXd f_learned = dmp.getLearnedForcingFunction(phi);
+    Eigen::MatrixXd f_desired =
+            dmp.evaluateDesiredForce(q_traj, omega_traj, alpha_traj);
+
+    std::vector<double> f_learned_x = dmp::test::toStdVector(f_learned.col(0));
+    std::vector<double> f_learned_y = dmp::test::toStdVector(f_learned.col(1));
+    std::vector<double> f_learned_z = dmp::test::toStdVector(f_learned.col(2));
+    std::vector<double> f_desired_x = dmp::test::toStdVector(f_desired.col(0));
+    std::vector<double> f_desired_y = dmp::test::toStdVector(f_desired.col(1));
+    std::vector<double> f_desired_z = dmp::test::toStdVector(f_desired.col(2));
+
+    gp5 << "set title 'Quaternion DMP - Forcing terms - Batch Learning'\n";
+    gp5 << "set xlabel 'Time (ticks)'\n";
+    gp5 << "set ylabel 'Quaternion'\n";
+    gp5 << "plot '-' with lines title 'f_x learned' linecolor 1"
+           ", '-' with lines title 'f_x desired' dashtype 2 linecolor 1";
+    gp5 << ", '-' with lines title 'f_y learned' linecolor 2"
+           ", '-' with lines title 'f_y desired' dashtype 2 linecolor 2";
+    gp5 << ", '-' with lines title 'f_z learned' linecolor 3"
+           ", '-' with lines title 'f_z desired' dashtype 2 linecolor 3";
+    gp5 << "\n";
+
+    gp5.send1d(f_learned_x);
+    gp5.send1d(f_desired_x);
+    gp5.send1d(f_learned_y);
+    gp5.send1d(f_desired_y);
+    gp5.send1d(f_learned_z);
+    gp5.send1d(f_desired_z);
 
     return 0;
 }

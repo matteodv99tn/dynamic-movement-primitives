@@ -57,7 +57,20 @@ namespace dmp {
         Eigen::VectorXd    getAngularAcceleration() const;
         Eigen::Vector3d    getLogarithm() const;
 
-        Eigen::MatrixXd computeLogarithms(const Eigen::MatrixXd& Qs);
+        Eigen::MatrixXd computeLogarithms(const Eigen::MatrixXd& Qs) const;
+        Eigen::MatrixXd getLearnedForcingFunction(const Eigen::VectorXd& phi) const;
+
+        Eigen::VectorXd evaluateDesiredForce(
+                const Eigen::Quaterniond& q,
+                const Eigen::VectorXd& omega,
+                const Eigen::VectorXd& alpha
+        ) const;
+
+        Eigen::MatrixXd evaluateDesiredForce(
+                const Eigen::MatrixXd& y,
+                const Eigen::MatrixXd& dy,
+                const Eigen::MatrixXd& ddy
+        ) const;
 
 
     public:

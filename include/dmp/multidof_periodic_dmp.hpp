@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <Eigen/Dense>
+#include <Eigen/src/Core/Matrix.h>
 
 #include "dmp/basis_function/basis_function.hpp"
 #include "dmp/dmp_base.hpp"
@@ -20,7 +21,7 @@ namespace dmp {
         );
 
         void setObservationPeriod(const double T);
-        
+
         void resetWeights();
 
         void incrementalLearn(
@@ -49,12 +50,26 @@ namespace dmp {
         void   step();
         double getPhase() const;
 
-        void setPositionState(const Eigen::VectorXd& y);
+        void            setPositionState(const Eigen::VectorXd& y);
         Eigen::VectorXd getPositionState() const;
         Eigen::VectorXd getVelocityState() const;
         Eigen::VectorXd getAccelerationState() const;
         Eigen::VectorXd getZ() const;
-        double getOmega() const;
+        double          getOmega() const;
+
+        Eigen::VectorXd evaluateDesiredForce(
+                const Eigen::VectorXd& y,
+                const Eigen::VectorXd& dy,
+                const Eigen::VectorXd& ddy
+        ) const;
+
+        Eigen::MatrixXd evaluateDesiredForce(
+                const Eigen::MatrixXd& y,
+                const Eigen::MatrixXd& dy,
+                const Eigen::MatrixXd& ddy
+        ) const;
+
+        Eigen::MatrixXd getLearnedForcingFunction(const Eigen::VectorXd& phi) const;
 
     private:
         std::size_t _n_dof;

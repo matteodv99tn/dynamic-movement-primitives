@@ -1,11 +1,12 @@
 #include "dmp/quaternion_periodic_dmp.hpp"
-#include "dmp/quaternion_utils.hpp"
 
 #include <cmath>
 #include <cstddef>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <iostream>
+
+#include "dmp/quaternion_utils.hpp"
 
 using dmp::QuaternionPeriodicDmp;
 
@@ -23,8 +24,8 @@ QuaternionPeriodicDmp::QuaternionPeriodicDmp(
         const double                    dt
 ) :
         _dmp(basis, 3, alpha, lambda, dt) {
-    _q  = Eigen::Quaterniond::Identity();
-    _g  = Eigen::Quaterniond::Identity();
+    _q = Eigen::Quaterniond::Identity();
+    _g = Eigen::Quaterniond::Identity();
 }
 
 void QuaternionPeriodicDmp::setObservationPeriod(const double T) {
@@ -63,8 +64,8 @@ void QuaternionPeriodicDmp::batchLearn(
         const Eigen::MatrixXd& omega,
         const Eigen::MatrixXd& alpha
 ) {
-    Eigen::MatrixXd q_log = computeLogarithms(q);
-    _dmp.batchLearn(phi, q_log, omega, alpha);
+    const Eigen::MatrixXd q_log = computeLogarithms(q);
+    _dmp.batchLearn(phi, -2 * q_log, omega, alpha);
 }
 
 void QuaternionPeriodicDmp::step() {
@@ -103,14 +104,39 @@ Eigen::Vector3d QuaternionPeriodicDmp::getLogarithm() const {
     return _dmp.getPositionState();
 }
 
-Eigen::MatrixXd QuaternionPeriodicDmp::computeLogarithms(const Eigen::MatrixXd& Qs){
+Eigen::MatrixXd QuaternionPeriodicDmp::computeLogarithms(const Eigen::MatrixXd& Qs
+) const {
     Eigen::MatrixXd q_log = Eigen::MatrixXd::Zero(Qs.rows(), 3);
     Eigen::Vector3d _tmp;
     for (int i = 0; i < Qs.rows(); ++i) {
         Eigen::Vector4d    q_tmp_value = Qs.row(i);
         Eigen::Quaterniond q_tmp(q_tmp_value);
         _tmp         = dmp::logarithmic_map(_g, q_tmp);
-        q_log.row(i) = -2 * _tmp;
+        q_log.row(i) = _tmp;
     }
     return q_log;
+}
+
+Eigen::MatrixXd QuaternionPeriodicDmp::getLearnedForcingFunction(
+        const Eigen::VectorXd& phi
+) const {
+    return _dmp.getLearnedForcingFunction(phi);
+}
+
+Eigen::VectorXd QuaternionPeriodicDmp::evaluateDesiredForce(
+        const Eigen::Quaterniond& q,
+        const Eigen::VectorXd&    omega,
+        const Eigen::VectorXd&    alpha
+) const {
+    Eigen::Vector3d q_log = dmp::logarithmic_map(_g, q);
+    return _dmp.evaluateDesiredForce(-2 * q_log, omega, alpha);
+}
+
+Eigen::MatrixXd QuaternionPeriodicDmp::evaluateDesiredForce(
+        const Eigen::MatrixXd& q,
+        const Eigen::MatrixXd& omega,
+        const Eigen::MatrixXd& alpha
+) const {
+    Eigen::MatrixXd q_log = computeLogarithms(q);
+    return _dmp.evaluateDesiredForce(-2 * q_log, omega, alpha);
 }

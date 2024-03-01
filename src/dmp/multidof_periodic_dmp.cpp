@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstddef>
 #include <Eigen/Dense>
+#include <Eigen/src/Core/Matrix.h>
 #include <iostream>
 
 using dmp::MultiDofPeriodicDmp;
@@ -42,8 +43,9 @@ void MultiDofPeriodicDmp::incrementalLearn(
         const Eigen::VectorXd& ddy
 ) {
     const Eigen::VectorXd basis = (*_basis)(phi);
-    const Eigen::VectorXd fd =
-            ddy * std::pow(_tau, 2) - _alpha * (-_beta * y - dy * _tau);
+    // const Eigen::VectorXd fd =
+    //         ddy * std::pow(_tau, 2) - _alpha * (-_beta * y - dy * _tau);
+    const Eigen::VectorXd fd = evaluateDesiredForce(y, dy, ddy);
 
     for (std::size_t i = 0; i < _n_dof; ++i) {
         const Eigen::VectorXd psi = basis;
@@ -64,8 +66,9 @@ void MultiDofPeriodicDmp::batchLearn(
     Eigen::MatrixXd   Phi       = Eigen::MatrixXd::Zero(n_samples, _N());
     for (std::size_t i = 0; i < n_samples; ++i) Phi.row(i) = (*_basis)(phi(i));
 
-    Eigen::MatrixXd fd = ddy * std::pow(_tau, 2) - _alpha * (-_beta * y - dy * _tau);
-    _w                 = Phi.colPivHouseholderQr().solve(fd);
+    // Eigen::MatrixXd fd = ddy * std::pow(_tau, 2) - _alpha * (-_beta * y - dy * _tau);
+    const Eigen::MatrixXd fd = evaluateDesiredForce(y, dy, ddy);
+    _w                       = Phi.colPivHouseholderQr().solve(fd);
 }
 
 double MultiDofPeriodicDmp::timeToPhase(const double& t) const { return t * _Omega(); }
@@ -86,21 +89,40 @@ void MultiDofPeriodicDmp::step() {
     static std::size_t i = 0;
     _dz_dt = _Omega() * (_alpha * (-_beta * _y - _z) + (*_basis)(_phi, _w));
     _z += _dz_dt * _dt;
-    _y += _Omega() *  _z * _dt;
+    _y += _Omega() * _z * _dt;
     _phi += _Omega() * _dt;
 }
 
 double MultiDofPeriodicDmp::getPhase() const { return _phi; }
 
-void MultiDofPeriodicDmp::setPositionState(const Eigen::VectorXd& y){
-    _y = y;
-}
+void MultiDofPeriodicDmp::setPositionState(const Eigen::VectorXd& y) { _y = y; }
+
 Eigen::VectorXd MultiDofPeriodicDmp::getPositionState() const { return _y; }
 
 Eigen::VectorXd MultiDofPeriodicDmp::getVelocityState() const { return _z * _Omega(); }
+
 Eigen::VectorXd MultiDofPeriodicDmp::getZ() const { return _z; }
+
 double MultiDofPeriodicDmp::getOmega() const { return _Omega(); }
 
 Eigen::VectorXd MultiDofPeriodicDmp::getAccelerationState() const {
     return _dz_dt * _Omega();
+}
+
+Eigen::VectorXd MultiDofPeriodicDmp::evaluateDesiredForce(
+        const Eigen::VectorXd& y, const Eigen::VectorXd& dy, const Eigen::VectorXd& ddy
+) const {
+    return ddy * std::pow(_tau, 2) - _alpha * (-_beta * y - dy * _tau);
+}
+
+Eigen::MatrixXd MultiDofPeriodicDmp::evaluateDesiredForce(
+        const Eigen::MatrixXd& y, const Eigen::MatrixXd& dy, const Eigen::MatrixXd& ddy
+) const {
+    return ddy * std::pow(_tau, 2) - _alpha * (-_beta * y - dy * _tau);
+}
+
+Eigen::MatrixXd MultiDofPeriodicDmp::getLearnedForcingFunction(
+        const Eigen::VectorXd& phi
+) const {
+    return (*_basis)(phi, _w);
 }
