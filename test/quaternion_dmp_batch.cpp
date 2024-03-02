@@ -20,15 +20,29 @@ int main() {
 
     auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(20);
 
+
     dmp::QuaternionPeriodicDmp dmp(basis);
     dmp.setObservationPeriod(time(time.size() - 1));
     Eigen::VectorXd phi = dmp.timeToPhase(time);
+
+    Eigen::MatrixXd q_ts = dmp.computeLogarithms(q_traj);
+    omega_traj.block(0, 0, q_ts.rows() - 1, 3) =
+            (q_ts.block(1, 0, q_ts.rows(), 3) - q_ts.block(0, 0, q_ts.rows() - 1, 3)) /
+            0.002;
+    omega_traj.row(q_ts.rows() - 1) = omega_traj.row(0);
+
+    alpha_traj.block(0, 0, omega_traj.rows() - 1, 3) =
+            (omega_traj.block(1, 0, omega_traj.rows(), 3) -
+             omega_traj.block(0, 0, omega_traj.rows() - 1, 3)) /
+            0.002;
+    alpha_traj.row(q_ts.rows() - 1) = alpha_traj.row(0);
+
 
     Eigen::Vector4d    q0_elems = q_traj.row(0);
     Eigen::Quaterniond q0(q0_elems);
     dmp.setInitialConditions(q0, omega_traj.row(0));
 
-    std::size_t        t_horizon = time.size() * 1;
+    std::size_t        t_horizon = time.size() * 4;
     Eigen::MatrixXd    Qhist(t_horizon, 4);
     Eigen::MatrixXd    Lhist(t_horizon, 3);
     Eigen::Quaterniond q;
@@ -173,7 +187,8 @@ int main() {
     gp4.send1d(alpha_z);
 #endif
 
-    Gnuplot gp5;
+#if 0
+    Gnuplot gp5; // Learned forcing terms
 
     Eigen::MatrixXd f_learned = dmp.getLearnedForcingFunction(phi);
     Eigen::MatrixXd f_desired =
@@ -203,6 +218,36 @@ int main() {
     gp5.send1d(f_desired_y);
     gp5.send1d(f_learned_z);
     gp5.send1d(f_desired_z);
+#endif
+
+    Gnuplot gp6;
+
+    Eigen::MatrixXd omega_original = dmp::getAngularVelocityTrajectory(trajectory);
+
+    std::vector<double> omegadiff_x = dmp::test::toStdVector(omega_traj.col(0));
+    std::vector<double> omegadiff_y = dmp::test::toStdVector(omega_traj.col(1));
+    std::vector<double> omegadiff_z = dmp::test::toStdVector(omega_traj.col(2));
+    std::vector<double> omegajac_x  = dmp::test::toStdVector(omega_original.col(0));
+    std::vector<double> omegajac_y  = dmp::test::toStdVector(omega_original.col(1));
+    std::vector<double> omegajac_z  = dmp::test::toStdVector(omega_original.col(2));
+
+    gp6 << "set title 'Quaternion DMP - Angula velocity - Batch Learning'\n";
+    gp6 << "set xlabel 'Time (ticks)'\n";
+    gp6 << "set ylabel 'Quaternion'\n";
+    gp6 << "plot '-' with lines title 'omega x diff' linecolor 1"
+           ", '-' with lines title 'omega x jacobian' dashtype 2 linecolor 1";
+    gp6 << ", '-' with lines title 'omega y diff' linecolor 2"
+           ", '-' with lines title 'omega y jacobian' dashtype 2 linecolor 2";
+    gp6 << ", '-' with lines title 'omega z diff' linecolor 3"
+           ", '-' with lines title 'omega z jacobian' dashtype 2 linecolor 3";
+    gp6 << "\n";
+
+    gp6.send1d(omegadiff_x);
+    gp6.send1d(omegajac_x);
+    gp6.send1d(omegadiff_y);
+    gp6.send1d(omegajac_y);
+    gp6.send1d(omegadiff_z);
+    gp6.send1d(omegajac_z);
 
     return 0;
 }

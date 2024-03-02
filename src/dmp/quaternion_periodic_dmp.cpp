@@ -69,18 +69,19 @@ void QuaternionPeriodicDmp::batchLearn(
 }
 
 void QuaternionPeriodicDmp::step() {
+    Eigen::Quaterniond q_old = _q;
     _dmp.step();
 
     const Eigen::Vector3d omega = _dmp.getVelocityState();
-    Eigen::Quaterniond    q_old = _q;
     _q                          = dmp::exponential_map(0.5 * _dt() * omega, _q);
+    // _q = dmp::exponential_map(_dmp.getPositionState(), _q);
 
     if (_q.w() * q_old.w() + _q.vec().dot(q_old.vec()) < 0) {
         std::cout << "Jumping" << std::endl;
         _q.coeffs() = -_q.coeffs();
     }
 
-    _dmp.setPositionState(-2 * dmp::logarithmic_map(_g, _q));
+    _dmp.setPositionState(-2 * dmp::logarithmic_map(_g, q_old));
 }
 
 void QuaternionPeriodicDmp::setInitialConditions(
