@@ -1,5 +1,6 @@
 #include "dmp/utils.hpp"
 
+#include <cstddef>
 #include <Eigen/Dense>
 #include <fstream>
 #include <optional>
@@ -8,7 +9,6 @@
 
 #include "range/v3/all.hpp"
 
-
 Eigen::MatrixXd dmp::loadTrainingTrajectory() {
     const std::string home_path = std::getenv("HOME");
     const std::string file_path = home_path + "/dmps/data/end_effector_states.csv";
@@ -16,7 +16,7 @@ Eigen::MatrixXd dmp::loadTrainingTrajectory() {
 }
 
 Eigen::MatrixXd dmp::loadTrainingTrajectory(const std::string& file_path) {
-    const std::size_t num_cols  = dmp::traindatacolumn::count;
+    const std::size_t num_cols = dmp::traindatacolumn::count;
 
     std::ifstream in(file_path);
     std::string   content(
@@ -109,7 +109,6 @@ Eigen::MatrixXd dmp::getAngularAccelerationTrajectory(const Eigen::MatrixXd& dat
 }
 
 std::string dmp::dumpToCsv(const Eigen::MatrixXd& data) {
-
     std::string res = "";
 
     for (int i = 0; i < data.rows(); i++) {
@@ -120,4 +119,15 @@ std::string dmp::dumpToCsv(const Eigen::MatrixXd& data) {
         res += "\n";
     }
     return res;
+}
+
+Eigen::MatrixXd dmp::finiteDifference(const Eigen::MatrixXd& data, const double dt) {
+    const std::size_t rows = data.rows();
+    const std::size_t cols = data.cols();
+    Eigen::MatrixXd   diff(rows, cols);
+
+    diff.block(0, 0, rows - 1, cols) =
+            (data.block(1, 0, rows - 1, cols) - data.block(0, 0, rows - 1, cols)) / dt;
+    diff.row(rows - 1) = diff.row(0);
+    return diff;
 }

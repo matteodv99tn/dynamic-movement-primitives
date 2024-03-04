@@ -19,7 +19,7 @@ namespace dmp {
         void setSamplingPeriod(const double& dt);
         void setTau(const double& tau);
 
-    protected:
+    // protected:
         BasisFunction::SharedPtr _basis;
         double                   _alpha, _beta;
         double                   _lambda;

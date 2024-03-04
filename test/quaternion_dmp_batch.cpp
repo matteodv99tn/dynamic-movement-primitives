@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "common/defines.hpp"
+#include "common/defines.hpp.in"
 #include "dmp/basis_function/periodic_gaussian_kernel.hpp"
 #include "dmp/quaternion_periodic_dmp.hpp"
 #include "dmp/quaternion_utils.hpp"
@@ -12,37 +13,51 @@
 #include "gnuplot-iostream.h"
 
 int main() {
-    Eigen::MatrixXd trajectory = dmp::loadTrainingTrajectory();
+    Eigen::MatrixXd trajectory = dmp::loadTrainingTrajectory(dmp::test::csv_path);
     Eigen::MatrixXd q_traj     = dmp::getQuaternionTrajectory(trajectory);
     Eigen::MatrixXd omega_traj = dmp::getAngularVelocityTrajectory(trajectory);
     Eigen::MatrixXd alpha_traj = dmp::getAngularAccelerationTrajectory(trajectory);
     Eigen::VectorXd time       = dmp::getTimeVector(trajectory);
+    time *= 0.01 / 0.002;
 
-    auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(20);
+    auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(50);
 
 
-    dmp::QuaternionPeriodicDmp dmp(basis);
+    dmp::QuaternionPeriodicDmp dmp(basis, 48.0);
     dmp.setObservationPeriod(time(time.size() - 1));
     Eigen::VectorXd phi = dmp.timeToPhase(time);
+    dmp.setSamplingPeriod(0.01);
 
+
+    // std::cout << "Tau: " << dmp.getTau() << std::endl;
+    // std::cout << "Tau: " << dmp.getTau() * (2*M_PI)<< std::endl;
+    // std::cout << "Tf: " << time(time.size() - 1) << std::endl;
+
+#if 0
+    std::cout << "Using numeric differentiation\n";
     Eigen::MatrixXd q_ts = dmp.computeLogarithms(q_traj);
-    omega_traj.block(0, 0, q_ts.rows() - 1, 3) =
-            (q_ts.block(1, 0, q_ts.rows(), 3) - q_ts.block(0, 0, q_ts.rows() - 1, 3)) /
-            0.002;
-    omega_traj.row(q_ts.rows() - 1) = omega_traj.row(0);
+    omega_traj           = dmp::finiteDifference(q_ts, 0.002);
+    alpha_traj           = dmp::finiteDifference(omega_traj, 0.002);
+    // omega_traj.block(0, 0, q_ts.rows() - 1, 3) =
+    //         (q_ts.block(1, 0, q_ts.rows(), 3) - q_ts.block(0, 0, q_ts.rows() - 1, 3))
+    //         / 0.002;
+    // omega_traj.row(q_ts.rows() - 1) = omega_traj.row(0);
 
-    alpha_traj.block(0, 0, omega_traj.rows() - 1, 3) =
-            (omega_traj.block(1, 0, omega_traj.rows(), 3) -
-             omega_traj.block(0, 0, omega_traj.rows() - 1, 3)) /
-            0.002;
-    alpha_traj.row(q_ts.rows() - 1) = alpha_traj.row(0);
+    // alpha_traj.block(0, 0, omega_traj.rows() - 1, 3) =
+    //         (omega_traj.block(1, 0, omega_traj.rows(), 3) -
+    //          omega_traj.block(0, 0, omega_traj.rows() - 1, 3)) /
+    //         0.002;
+    // alpha_traj.row(q_ts.rows() - 1) = alpha_traj.row(0);
 
+    // std::cout << "Initial conditions set\n";
+#endif
 
     Eigen::Vector4d    q0_elems = q_traj.row(0);
     Eigen::Quaterniond q0(q0_elems);
-    dmp.setInitialConditions(q0, omega_traj.row(0));
+    // dmp.setInitialConditions(q0, omega_traj.row(0));
+    dmp.setInitialConditions(q0, Eigen::Vector3d::Zero());
 
-    std::size_t        t_horizon = time.size() * 4;
+    std::size_t        t_horizon = time.size() * 1;
     Eigen::MatrixXd    Qhist(t_horizon, 4);
     Eigen::MatrixXd    Lhist(t_horizon, 3);
     Eigen::Quaterniond q;
@@ -50,14 +65,47 @@ int main() {
     dmp.batchLearn(phi, q_traj, omega_traj, alpha_traj);
 
     for (int i = 0; i < t_horizon; i++) {
-        q            = dmp.getQuaternionState();
+        q = dmp.getQuaternionState();
+        // if (i % 10 == 0)
+        //     std::cout << i << " - q: " << q<< std::endl;
         Qhist.row(i) = q.coeffs().transpose();
         Lhist.row(i) = dmp.getLogarithm();
         dmp.step();
     }
 
-    // Plotting
-    Gnuplot gp;
+    Eigen::MatrixXd tmp = dmp._fd_des;
+    std::cout << " ==== params ====" << std::endl;
+    std::cout << "alpha: " << dmp._alpha << std::endl;
+    std::cout << "beta: " << dmp._beta << std::endl;
+    std::cout << "tau: " << dmp._tau << std::endl;
+    std::cout << "Omega: " << dmp._Omega() << std::endl;
+    std::cout << "dt: " << dmp._dt << std::endl;
+
+    for (int i = 0; i < tmp.rows(); i++) {
+        if (i % 100 == 0) {
+            std::cout << "================= i = " << i << " =====================" <<std::endl;
+            std::cout << "phi: " << dmp._phi_hist(i) << std::endl;
+            std::cout << "q: " << dmp._q_hist.row(i) << std::endl;
+            std::cout << "eta: " << dmp._eta_hist.row(i) << std::endl;
+            std::cout << "f: " << dmp._f_hist.row(i) << std::endl;
+            std::cout << "deta: " << dmp._deta_dt_hist.row(i) << std::endl;
+            std::cout << "log: " << dmp._log_hist.row(i) << std::endl;
+            // std::cout << "fd: " << tmp.row(i) << std::endl;
+            // Eigen::Vector3d log = dmp::logarithmic_map(
+            //         Eigen::Quaterniond::Identity(),
+            //         Eigen::Quaterniond(Eigen::Vector4d(q_traj.row(i)))
+            //         );
+            // std::cout << "log: " << log.transpose() << std::endl;
+            // std::cout << "q: " << q_traj.row(i) << std::endl;
+            // std::cout << "omega: " << omega_traj.row(i) << std::endl;
+            // std::cout << "alpha: " << alpha_traj.row(i) << std::endl;
+
+        }
+    }
+
+
+#if 1
+    Gnuplot gp;  // Quaternions
 
     std::vector<double> qx     = dmp::test::toStdVector(Qhist.col(0));
     std::vector<double> qy     = dmp::test::toStdVector(Qhist.col(1));
@@ -90,7 +138,7 @@ int main() {
     gp.send1d(qz_des);
     gp.send1d(qw);
     gp.send1d(qw_des);
-
+#endif
 
 #if 0
     Gnuplot gp2; // Quaternion logarithms
@@ -123,7 +171,7 @@ int main() {
 #endif
 
 #if 0
-    Gnuplot gp3; // RPY
+    Gnuplot gp3;  // RPY
 
     Eigen::MatrixXd rpy     = Eigen::MatrixXd::Zero(t_horizon, 3);
     Eigen::MatrixXd rpy_des = Eigen::MatrixXd::Zero(q_traj.rows(), 3);
@@ -188,7 +236,7 @@ int main() {
 #endif
 
 #if 0
-    Gnuplot gp5; // Learned forcing terms
+    Gnuplot gp5;  // Learned forcing terms
 
     Eigen::MatrixXd f_learned = dmp.getLearnedForcingFunction(phi);
     Eigen::MatrixXd f_desired =
@@ -220,9 +268,15 @@ int main() {
     gp5.send1d(f_desired_z);
 #endif
 
-    Gnuplot gp6;
+#if 0
+    Gnuplot gp6; // Angular velocity comparison
 
     Eigen::MatrixXd omega_original = dmp::getAngularVelocityTrajectory(trajectory);
+    for (std::size_t i = 0; i < omega_original.rows(); ++i) {
+        Eigen::Quaterniond qrot(Eigen::Vector4d(q_traj.row(i)));
+        omega_original.row(i) = qrot * omega_original.row(i);
+        omega_original.row(i) *= -1;
+    }
 
     std::vector<double> omegadiff_x = dmp::test::toStdVector(omega_traj.col(0));
     std::vector<double> omegadiff_y = dmp::test::toStdVector(omega_traj.col(1));
@@ -231,7 +285,7 @@ int main() {
     std::vector<double> omegajac_y  = dmp::test::toStdVector(omega_original.col(1));
     std::vector<double> omegajac_z  = dmp::test::toStdVector(omega_original.col(2));
 
-    gp6 << "set title 'Quaternion DMP - Angula velocity - Batch Learning'\n";
+    gp6 << "set title 'Quaternion DMP - Angula velocity rotated - Batch Learning'\n";
     gp6 << "set xlabel 'Time (ticks)'\n";
     gp6 << "set ylabel 'Quaternion'\n";
     gp6 << "plot '-' with lines title 'omega x diff' linecolor 1"
@@ -248,6 +302,7 @@ int main() {
     gp6.send1d(omegajac_y);
     gp6.send1d(omegadiff_z);
     gp6.send1d(omegajac_z);
+#endif
 
     return 0;
 }

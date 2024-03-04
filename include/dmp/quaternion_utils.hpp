@@ -3,6 +3,7 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <Eigen/src/Geometry/Quaternion.h>
 
 namespace dmp {
 
@@ -14,6 +15,10 @@ namespace dmp {
     Eigen::Quaterniond exponential_map(const Eigen::Vector3d& v);
     Eigen::Quaterniond exponential_map(
             const Eigen::Vector3d& v, const Eigen::Quaterniond& q0
+    );
+
+    Eigen::Quaterniond quaternion_product(
+            const Eigen::Quaterniond& q1, const Eigen::Quaterniond& q2
     );
 
 }  // namespace dmp

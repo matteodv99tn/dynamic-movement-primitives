@@ -131,7 +131,7 @@ int main() {
     std::vector<double> pitch_des = dmp::test::toStdVector(rpy_des.col(1));
     std::vector<double> yaw_des   = dmp::test::toStdVector(rpy_des.col(2));
 
-    gp3 << "set title 'Quaternion DMP - RPY - Batch Learning'\n";
+    gp3 << "set title 'Quaternion DMP - RPY - Incremental Learning'\n";
     gp3 << "set xlabel 'Time (ticks)'\n";
     gp3 << "set ylabel 'Quaternion'\n";
     gp3 << "plot '-' with lines title 'roll' linecolor 1"

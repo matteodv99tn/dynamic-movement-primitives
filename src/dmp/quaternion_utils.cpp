@@ -18,7 +18,7 @@ Eigen::Vector3d dmp::logarithmic_map(const Eigen::Quaterniond& q) {
 Eigen::Vector3d dmp::logarithmic_map(
         const Eigen::Quaterniond& q1, const Eigen::Quaterniond& q2
 ) {
-    return dmp::logarithmic_map(q1 * q2.conjugate());
+    return dmp::logarithmic_map(dmp::quaternion_product(q1, q2.conjugate()));
 }
 
 Eigen::Quaterniond dmp::exponential_map(const Eigen::Vector3d& v) {
@@ -34,5 +34,19 @@ Eigen::Quaterniond dmp::exponential_map(const Eigen::Vector3d& v) {
 Eigen::Quaterniond dmp::exponential_map(
         const Eigen::Vector3d& v, const Eigen::Quaterniond& q0
 ) {
-    return dmp::exponential_map(v) * q0;
+    return dmp::quaternion_product(dmp::exponential_map(v), q0);
+}
+
+Eigen::Quaterniond dmp::quaternion_product(
+        const Eigen::Quaterniond& q1, const Eigen::Quaterniond& q2
+) {
+    const double w1 = q1.w();
+    const double w2 = q2.w();
+    const Eigen::Vector3d v1 = q1.vec();
+    const Eigen::Vector3d v2 = q2.vec();
+
+    const double w = w1 * w2 - v1.dot(v2);
+    const Eigen::Vector3d v = w1 * v2 + w2 * v1 + v1.cross(v2);
+    // return Eigen::Quaterniond(w, v.x(), v.y(), v.z());
+    return q1 * q2;
 }

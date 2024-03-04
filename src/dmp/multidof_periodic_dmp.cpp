@@ -3,7 +3,6 @@
 #include <cmath>
 #include <cstddef>
 #include <Eigen/Dense>
-#include <Eigen/src/Core/Matrix.h>
 #include <iostream>
 
 using dmp::MultiDofPeriodicDmp;
