@@ -13,6 +13,7 @@
 #include "gnuplot-iostream.h"
 
 int main() {
+    double          dt  = 0.01;
     Eigen::MatrixXd trajectory = dmp::loadTrainingTrajectory(
             dmp::test::data_directory + "/saveriano.csv");
     Eigen::MatrixXd q_traj_load     = dmp::getQuaternionTrajectory(trajectory);
@@ -23,6 +24,7 @@ int main() {
     q_traj.col(3) = q_traj_load.col(0);
     Eigen::MatrixXd omega_traj = dmp::getAngularVelocityTrajectory(trajectory);
     Eigen::MatrixXd alpha_traj = dmp::getAngularAccelerationTrajectory(trajectory);
+
     Eigen::VectorXd time       = dmp::getTimeVector(trajectory);
     time *= 0.01 / 0.002;
 
@@ -32,7 +34,6 @@ int main() {
     dmp::QuaternionPeriodicDmp dmp(basis, 48.0);
     dmp.setObservationPeriod(time(time.size() - 1));
     Eigen::VectorXd phi = dmp.timeToPhase(time);
-    double          dt  = 0.01;
     dmp.setSamplingPeriod(dt);
 
 #if 1
