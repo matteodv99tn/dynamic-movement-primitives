@@ -3,22 +3,38 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <cmath>
+#include <iostream>
 
 Eigen::Vector3d dmp::logarithmic_map(const Eigen::Quaterniond& q) {
 
-    Eigen::Vector3d u(q.x(), q.y(), q.z());
-    double nu = q.w();
+    Eigen::Quaterniond q_normalized = q.normalized();
+    Eigen::Vector3d u(q_normalized.x(), q_normalized.y(), q_normalized.z());
+    double nu = q_normalized.w();
 
-    if (u.norm() < 1e-6)
+    double norm = 0;
+    norm += u(0) * u(0);
+    norm += u(1) * u(1);
+    norm += u(2) * u(2);
+
+    if (norm < 1e-10)
         return Eigen::Vector3d::Zero();
 
-    return std::acos(nu) * u / u.norm();
+    Eigen::Vector3d res = std::acos(nu) * u / std::sqrt(norm);
+
+    if(res.hasNaN()){
+        std::cout << "FOUND NAN - Input q: " << q << std::endl;
+        std::cout << "norm: " << std::sqrt(norm) << std::endl;
+        std::cout << "u: " << u << std::endl;
+        std::cout << "acos: " << std::acos(nu) << std::endl;
+    }
+
+    return res;
 }
 
 Eigen::Vector3d dmp::logarithmic_map(
         const Eigen::Quaterniond& q1, const Eigen::Quaterniond& q2
 ) {
-    return dmp::logarithmic_map(dmp::quaternion_product(q1, q2.conjugate()));
+    return dmp::logarithmic_map(q1* q2.conjugate());
 }
 
 Eigen::Quaterniond dmp::exponential_map(const Eigen::Vector3d& v) {
@@ -49,4 +65,20 @@ Eigen::Quaterniond dmp::quaternion_product(
     const Eigen::Vector3d v = w1 * v2 + w2 * v1 + v1.cross(v2);
     // return Eigen::Quaterniond(w, v.x(), v.y(), v.z());
     return q1 * q2;
+}
+
+Eigen::MatrixXd dmp::quaternion_numerical_diff(const Eigen::MatrixXd& q_traj, const double& dt){
+    Eigen::MatrixXd q_ts(q_traj.rows(), 3);
+    Eigen::Quaterniond qprev, qcurr;
+
+    for (std::size_t i = 0; i < q_traj.rows(); i++){
+        qcurr = Eigen::Quaterniond(Eigen::Vector4d(q_traj.row(i)));
+        if(i == 0)  qprev = qcurr;
+
+        const Eigen::Vector3d log = dmp::logarithmic_map(qcurr, qprev);
+        q_ts.row(i) = log;
+        qprev = qcurr;
+    }
+
+    return 2 * q_ts / dt;
 }

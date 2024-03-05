@@ -13,29 +13,29 @@
 #include "gnuplot-iostream.h"
 
 int main() {
-    Eigen::MatrixXd trajectory = dmp::loadTrainingTrajectory(
-            dmp::test::data_directory + "/saveriano.csv");
-    Eigen::MatrixXd q_traj_load     = dmp::getQuaternionTrajectory(trajectory);
+    Eigen::MatrixXd trajectory =
+            dmp::loadTrainingTrajectory(dmp::test::data_directory + "/saveriano.csv");
+    Eigen::MatrixXd q_traj_load = dmp::getQuaternionTrajectory(trajectory);
     Eigen::MatrixXd q_traj(q_traj_load.rows(), 4);
-    q_traj.col(0) = q_traj_load.col(1);
-    q_traj.col(1) = q_traj_load.col(2);
-    q_traj.col(2) = q_traj_load.col(3);
-    q_traj.col(3) = q_traj_load.col(0);
+    q_traj.col(0)              = q_traj_load.col(1);
+    q_traj.col(1)              = q_traj_load.col(2);
+    q_traj.col(2)              = q_traj_load.col(3);
+    q_traj.col(3)              = q_traj_load.col(0);
     Eigen::MatrixXd omega_traj = dmp::getAngularVelocityTrajectory(trajectory);
     Eigen::MatrixXd alpha_traj = dmp::getAngularAccelerationTrajectory(trajectory);
     Eigen::VectorXd time       = dmp::getTimeVector(trajectory);
     time *= 0.01 / 0.002;
 
-    auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(50);
+    auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(30);
 
 
-    dmp::QuaternionPeriodicDmp dmp(basis, 48.0);
+    dmp::QuaternionPeriodicDmp dmp(basis, 48.0, 0.9999);
     dmp.setObservationPeriod(time(time.size() - 1));
     Eigen::VectorXd phi = dmp.timeToPhase(time);
     double          dt  = 0.01;
     dmp.setSamplingPeriod(dt);
 
-#if 1
+#if 0
     std::cout << "Using numeric differentiation\n";
     omega_traj = dmp::quaternion_numerical_diff(q_traj, dt);
     alpha_traj = dmp::finiteDifference(omega_traj, dt);
@@ -44,17 +44,19 @@ int main() {
     Eigen::Vector4d    q0_elems = q_traj.row(0);
     Eigen::Quaterniond q0(q0_elems);
     dmp.setInitialConditions(q0, omega_traj.row(0));
-    dmp.setInitialConditions(q0, Eigen::Vector3d::Zero());
 
     std::size_t        t_horizon = time.size() * 3;
     Eigen::MatrixXd    Qhist(t_horizon, 4);
     Eigen::MatrixXd    Lhist(t_horizon, 3);
     Eigen::Quaterniond q;
 
-    dmp.batchLearn(phi, q_traj, omega_traj, alpha_traj);
 
     for (int i = 0; i < t_horizon; i++) {
         q = dmp.getQuaternionState();
+        if (i < q_traj.rows()) {
+            Eigen::Quaterniond qcurr(Eigen::Vector4d(q_traj.row(i)));
+            dmp.incrementalLearn(phi(i), qcurr, omega_traj.row(i), alpha_traj.row(i));
+        }
         Qhist.row(i) = q.coeffs();
         Lhist.row(i) = dmp.getLogarithm();
         dmp.step();
@@ -67,10 +69,18 @@ int main() {
     std::vector<double> qy     = dmp::test::toStdVector(Qhist.col(1));
     std::vector<double> qz     = dmp::test::toStdVector(Qhist.col(2));
     std::vector<double> qw     = dmp::test::toStdVector(Qhist.col(3));
-    std::vector<double> qx_des = dmp::test::toStdVector(q_traj.col(0));
-    std::vector<double> qy_des = dmp::test::toStdVector(q_traj.col(1));
-    std::vector<double> qz_des = dmp::test::toStdVector(q_traj.col(2));
-    std::vector<double> qw_des = dmp::test::toStdVector(q_traj.col(3));
+    Eigen::VectorXd qx_double(q_traj.rows()*2);
+    Eigen::VectorXd qy_double(q_traj.rows()*2);
+    Eigen::VectorXd qz_double(q_traj.rows()*2);
+    Eigen::VectorXd qw_double(q_traj.rows()*2);
+    qx_double << q_traj.col(0), q_traj.col(0);
+    qy_double << q_traj.col(1), q_traj.col(1);
+    qz_double << q_traj.col(2), q_traj.col(2);
+    qw_double << q_traj.col(3), q_traj.col(3);
+    std::vector<double> qx_des = dmp::test::toStdVector(qx_double);
+    std::vector<double> qy_des = dmp::test::toStdVector(qy_double);
+    std::vector<double> qz_des = dmp::test::toStdVector(qz_double);
+    std::vector<double> qw_des = dmp::test::toStdVector(qw_double);
 
 
     gp << "set title 'Quaternion DMP - Batch Learning'\n";

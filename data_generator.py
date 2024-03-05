@@ -27,6 +27,7 @@ def min_jerk_traj(q0: np.ndarray, q1: np.ndarray, t: np.ndarray):
 Thalf = 2.0
 dt = 0.002
 N = int(Thalf / dt)
+print('N:', N)
 tfirst = np.arange(0, dt * N, dt)
 tsecond = np.arange(dt * N, 2 * dt * N, dt)
 
@@ -47,6 +48,8 @@ q3 = Q[:, 2]
 q4 = Q[:, 3]
 q5 = Q[:, 4]
 q6 = Q[:, 5]
+
+print(q1.shape)
 
 if True:
     plt.figure()
@@ -179,26 +182,30 @@ idx_end = N
 # idx_start = 170
 # idx_end = 2250
 
-x = np.concatenate((x[idx_start:idx_end], np.flip(x[idx_start:idx_end])))
-y = np.concatenate((y[idx_start:idx_end], np.flip(y[idx_start:idx_end])))
-z = np.concatenate((z[idx_start:idx_end], np.flip(z[idx_start:idx_end])))
-qx = np.concatenate((qx[idx_start:idx_end], np.flip(qx[idx_start:idx_end])))
-qy = np.concatenate((qy[idx_start:idx_end], np.flip(qy[idx_start:idx_end])))
-qz = np.concatenate((qz[idx_start:idx_end], np.flip(qz[idx_start:idx_end])))
-qw = np.concatenate((qw[idx_start:idx_end], np.flip(qw[idx_start:idx_end])))
-vx = np.concatenate((vx[idx_start:idx_end], np.flip(vx[idx_start:idx_end])))
-vy = np.concatenate((vy[idx_start:idx_end], np.flip(vy[idx_start:idx_end])))
-vz = np.concatenate((vz[idx_start:idx_end], np.flip(vz[idx_start:idx_end])))
-wx = np.concatenate((wx[idx_start:idx_end], np.flip(wx[idx_start:idx_end])))
-wy = np.concatenate((wy[idx_start:idx_end], np.flip(wy[idx_start:idx_end])))
-wz = np.concatenate((wz[idx_start:idx_end], np.flip(wz[idx_start:idx_end])))
-ax = np.concatenate((ax[idx_start:idx_end], np.flip(ax[idx_start:idx_end])))
-ay = np.concatenate((ay[idx_start:idx_end], np.flip(ay[idx_start:idx_end])))
-az = np.concatenate((az[idx_start:idx_end], np.flip(az[idx_start:idx_end])))
-awx = np.concatenate((awx[idx_start:idx_end], np.flip(awx[idx_start:idx_end])))
-awy = np.concatenate((awy[idx_start:idx_end], np.flip(awy[idx_start:idx_end])))
-awz = np.concatenate((awz[idx_start:idx_end], np.flip(awz[idx_start:idx_end])))
-t = np.arange(0, dt * 2 * (idx_end - idx_start), dt)
+ones = np.ones(10)
+zeros = np.zeros(10)
+
+x = np.concatenate((ones*x[0], x[idx_start:idx_end], np.flip(x[idx_start:idx_end]), ones*x[0]))
+y = np.concatenate((ones*y[0], y[idx_start:idx_end], np.flip(y[idx_start:idx_end]), ones*y[0]))
+z = np.concatenate((ones*z[0], z[idx_start:idx_end], np.flip(z[idx_start:idx_end]), ones*z[0]))
+qx = np.concatenate((ones*qx[0], qx[idx_start:idx_end], np.flip(qx[idx_start:idx_end]), ones*qx[0]))
+qy = np.concatenate((ones*qy[0], qy[idx_start:idx_end], np.flip(qy[idx_start:idx_end]), ones*qy[0]))
+qz = np.concatenate((ones*qz[0], qz[idx_start:idx_end], np.flip(qz[idx_start:idx_end]), ones*qz[0]))
+qw = np.concatenate((ones*qw[0], qw[idx_start:idx_end], np.flip(qw[idx_start:idx_end]), ones*qw[0]))
+vx = np.concatenate((zeros, vx[idx_start:idx_end], np.flip(vx[idx_start:idx_end]), zeros))
+vy = np.concatenate((zeros, vy[idx_start:idx_end], np.flip(vy[idx_start:idx_end]), zeros))
+vz = np.concatenate((zeros, vz[idx_start:idx_end], np.flip(vz[idx_start:idx_end]), zeros))
+wx = np.concatenate((zeros, wx[idx_start:idx_end], np.flip(wx[idx_start:idx_end]), zeros))
+wy = np.concatenate((zeros, wy[idx_start:idx_end], np.flip(wy[idx_start:idx_end]), zeros))
+wz = np.concatenate((zeros, wz[idx_start:idx_end], np.flip(wz[idx_start:idx_end]), zeros))
+ax = np.concatenate((zeros, ax[idx_start:idx_end], np.flip(ax[idx_start:idx_end]), zeros))
+ay = np.concatenate((zeros, ay[idx_start:idx_end], np.flip(ay[idx_start:idx_end]), zeros))
+az = np.concatenate((zeros, az[idx_start:idx_end], np.flip(az[idx_start:idx_end]), zeros))
+awx = np.concatenate((zeros, awx[idx_start:idx_end], np.flip(awx[idx_start:idx_end]), zeros))
+awy = np.concatenate((zeros, awy[idx_start:idx_end], np.flip(awy[idx_start:idx_end]), zeros))
+awz = np.concatenate((zeros, awz[idx_start:idx_end], np.flip(awz[idx_start:idx_end]), zeros))
+# t = np.arange(0, dt*(len(x)), dt)
+t = np.linspace(0, dt*len(x), len(x))
 
 plt.figure()
 plt.plot(t, x, label='x')

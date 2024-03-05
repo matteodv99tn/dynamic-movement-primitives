@@ -21,6 +21,10 @@ namespace dmp {
             const Eigen::Quaterniond& q1, const Eigen::Quaterniond& q2
     );
 
+    Eigen::MatrixXd quaternion_numerical_diff(
+            const Eigen::MatrixXd& q_traj, const double& dt
+    );
+
 }  // namespace dmp
 
 

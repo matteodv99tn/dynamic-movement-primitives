@@ -27,8 +27,7 @@ QuaternionPeriodicDmp::QuaternionPeriodicDmp(
 }
 
 void QuaternionPeriodicDmp::setObservationPeriod(const double T) {
-    _tau = T;
-    // _tau = T;
+    _tau = T / (2 * M_PI);
 }
 
 void QuaternionPeriodicDmp::resetWeights() {
@@ -38,11 +37,11 @@ void QuaternionPeriodicDmp::resetWeights() {
 }
 
 double QuaternionPeriodicDmp::timeToPhase(const double& t) const {
-    return t * _Omega() * (2 * M_PI);
+    return t * _Omega();
 }
 
 Eigen::VectorXd QuaternionPeriodicDmp::timeToPhase(const Eigen::VectorXd& t) const {
-    return t * _Omega() * (2 * M_PI);
+    return t * _Omega();
 }
 
 double QuaternionPeriodicDmp::getPhase() const { return _phi; }
@@ -141,7 +140,7 @@ void QuaternionPeriodicDmp::batchLearn(
     _deta_dt_hist               = Eigen::MatrixXd::Zero(phi.size(), 3);
     _q_hist                     = Eigen::MatrixXd::Zero(phi.size(), 4);
     _f_hist                     = Eigen::MatrixXd::Zero(phi.size(), 3);
-    _log_hist                     = Eigen::MatrixXd::Zero(phi.size(), 3);
+    _log_hist                   = Eigen::MatrixXd::Zero(phi.size(), 3);
     _phi_hist                   = Eigen::VectorXd::Zero(phi.size());
     const std::size_t n_samples = phi.size();
     Eigen::MatrixXd   Phi       = Eigen::MatrixXd::Zero(n_samples, _N());
@@ -156,33 +155,30 @@ void QuaternionPeriodicDmp::batchLearn(
 }
 
 void QuaternionPeriodicDmp::step() {
-    static std::size_t i   = 0;
+    static std::size_t i = 0;
 
 
-    Eigen::Vector3d    log = dmp::logarithmic_map(_g, _q);
-    Eigen::Vector3d    f   = (*_basis)(_phi, _w);
-    _deta_dt               = _Omega() * (_alpha * (2 * _beta * log - _eta) + f);
+    Eigen::Vector3d log = dmp::logarithmic_map(_g, _q);
+    Eigen::Vector3d f   = (*_basis)(_phi, _w);
+    _deta_dt            = _Omega() * (_alpha * (2 * _beta * log - _eta) + f);
     // _deta_dt /= _tau;
     _eta += _deta_dt * _dt;
 
-    if (idx == 0) {
-        std::cout << f << std::endl;
+    _q = dmp::exponential_map(0.5 * _dt * _Omega() * _eta, _q);
+
+    if (idx < _eta_hist.rows()) {
+        _eta_hist.row(idx)       = _eta;
+        _deta_dt_hist.row(idx)   = _deta_dt;
+        _q_hist.row(idx)         = Eigen::Vector4d(_q.w(), _q.x(), _q.y(), _q.z());
+        _f_hist.row(idx)[0]      = f[0];
+        _f_hist.row(idx)[1]      = f[1];
+        _f_hist.row(idx)[2]      = f[2];
+        _log_hist.row(idx)       = log;
+        volatile double phi_curr = _phi;
+        _phi_hist(idx)           = phi_curr;
     }
 
-    _q = dmp::exponential_map(0.5 * _dt * _Omega() * _eta, _q);
-    // _q = dmp::exponential_map(_dt * _Omega() * _eta, _q);
-
-    _eta_hist.row(idx)     = _eta;
-    _deta_dt_hist.row(idx) = _deta_dt;
-    _q_hist.row(idx)       = Eigen::Vector4d(_q.w(), _q.x(), _q.y(), _q.z());
-     _f_hist.row(idx)[0]       = f[0];
-     _f_hist.row(idx)[1]       = f[1];
-     _f_hist.row(idx)[2]       = f[2];
-     _log_hist.row(idx)       = log;
-    volatile double phi_curr = _phi;
-    _phi_hist(idx)         = phi_curr;
-
-    _phi += 2 * M_PI * _Omega() * _dt;
+    _phi += _Omega() * _dt;
     i++;
     idx++;
 }
