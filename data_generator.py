@@ -6,7 +6,7 @@ import os.path
 from scipy.spatial.transform import Rotation as Rot
 
 prj_dir = os.path.dirname(os.path.realpath(__file__))
-outfile = os.path.join(prj_dir, 'test', 'data', 'training_data.csv')
+outfile = os.path.join(prj_dir, 'test', 'data', 'synthetic.csv')
 
 
 def min_jerk_traj(q0: np.ndarray, q1: np.ndarray, t: np.ndarray):
@@ -27,7 +27,6 @@ def min_jerk_traj(q0: np.ndarray, q1: np.ndarray, t: np.ndarray):
 Thalf = 2.0
 dt = 0.002
 N = int(Thalf / dt)
-print('N:', N)
 tfirst = np.arange(0, dt * N, dt)
 tsecond = np.arange(dt * N, 2 * dt * N, dt)
 
@@ -37,10 +36,15 @@ q1 = np.array([0.5, 0.8, -0.1, 0.5, -0.4, 1.5])
 Q1, Qd1, Qdd1 = min_jerk_traj(q0, q1, tfirst)
 Q2, Qd2, Qdd2 = min_jerk_traj(q1, q0, tsecond)
 
+Nreps = 100
+Qinit = np.full((Nreps, 6), q0).T
+Qdinit = np.zeros((Nreps, 6)).T
+
 t = np.concatenate((tfirst, tsecond))
-Q = np.hstack((Q1, Q2)).T
-Qd = np.hstack((Qd1, Qd2)).T
-Qdd = np.hstack((Qdd1, Qdd2)).T
+
+Q = np.hstack((Qinit, Q1, Q2, Qinit)).T
+Qd = np.hstack((Qdinit, Qd1, Qd2, Qdinit)).T
+Qdd = np.hstack((Qdinit, Qdd1, Qdd2, Qdinit)).T
 
 q1 = Q[:, 0]
 q2 = Q[:, 1]
@@ -49,7 +53,8 @@ q4 = Q[:, 3]
 q5 = Q[:, 4]
 q6 = Q[:, 5]
 
-print(q1.shape)
+t = np.arange(0, dt * len(q1), dt)
+N = len(t)
 
 if True:
     plt.figure()
@@ -67,7 +72,6 @@ if True:
 
     plt.figure()
     plt.plot(t, Qd[:, 0], label='qd1')
-    plt.plot(t[0:-1], q1dnum, label='qd1diff', linestyle='--')
     plt.plot(t, Qd[:, 1], label='qd2')
     plt.plot(t, Qd[:, 2], label='qd3')
     plt.plot(t, Qd[:, 3], label='qd4')
@@ -78,7 +82,6 @@ if True:
 
     plt.figure()
     plt.plot(t, Qdd[:, 0], label='qdd1')
-    plt.plot(t[0:-2], q1ddnum, label='qd1diff', linestyle='--')
     plt.plot(t, Qdd[:, 1], label='qdd2')
     plt.plot(t, Qdd[:, 2], label='qdd3')
     plt.plot(t, Qdd[:, 3], label='qdd4')
@@ -91,8 +94,6 @@ if True:
 mdl = pin.buildModelsFromUrdf('ur.urdf')[0]
 data = mdl.createData()
 RFid = mdl.getFrameId('tool0')
-
-N = N - 1
 
 x = np.zeros(N)
 y = np.zeros(N)
@@ -165,95 +166,63 @@ for i in range(N):
     awy[i] = a_ee.angular[1]
     awz[i] = a_ee.angular[2]
 
-
-    # ax[i] = pin.getFrameAcceleration(mdl, data, RFid).linear[0]
-
-# ax = np.diff(vx) / dt
-# ay = np.diff(vy) / dt
-# az = np.diff(vz) / dt
-# awx = np.diff(wx) / dt
-# awy = np.diff(wy) / dt
-# awz = np.diff(wz) / dt
-
 Qdnorm = np.linalg.norm(Qd, axis=0)
 
 idx_start = 0
 idx_end = N
-# idx_start = 170
-# idx_end = 2250
 
 ones = np.ones(10)
 zeros = np.zeros(10)
 
-x = np.concatenate((ones*x[0], x[idx_start:idx_end], np.flip(x[idx_start:idx_end]), ones*x[0]))
-y = np.concatenate((ones*y[0], y[idx_start:idx_end], np.flip(y[idx_start:idx_end]), ones*y[0]))
-z = np.concatenate((ones*z[0], z[idx_start:idx_end], np.flip(z[idx_start:idx_end]), ones*z[0]))
-qx = np.concatenate((ones*qx[0], qx[idx_start:idx_end], np.flip(qx[idx_start:idx_end]), ones*qx[0]))
-qy = np.concatenate((ones*qy[0], qy[idx_start:idx_end], np.flip(qy[idx_start:idx_end]), ones*qy[0]))
-qz = np.concatenate((ones*qz[0], qz[idx_start:idx_end], np.flip(qz[idx_start:idx_end]), ones*qz[0]))
-qw = np.concatenate((ones*qw[0], qw[idx_start:idx_end], np.flip(qw[idx_start:idx_end]), ones*qw[0]))
-vx = np.concatenate((zeros, vx[idx_start:idx_end], np.flip(vx[idx_start:idx_end]), zeros))
-vy = np.concatenate((zeros, vy[idx_start:idx_end], np.flip(vy[idx_start:idx_end]), zeros))
-vz = np.concatenate((zeros, vz[idx_start:idx_end], np.flip(vz[idx_start:idx_end]), zeros))
-wx = np.concatenate((zeros, wx[idx_start:idx_end], np.flip(wx[idx_start:idx_end]), zeros))
-wy = np.concatenate((zeros, wy[idx_start:idx_end], np.flip(wy[idx_start:idx_end]), zeros))
-wz = np.concatenate((zeros, wz[idx_start:idx_end], np.flip(wz[idx_start:idx_end]), zeros))
-ax = np.concatenate((zeros, ax[idx_start:idx_end], np.flip(ax[idx_start:idx_end]), zeros))
-ay = np.concatenate((zeros, ay[idx_start:idx_end], np.flip(ay[idx_start:idx_end]), zeros))
-az = np.concatenate((zeros, az[idx_start:idx_end], np.flip(az[idx_start:idx_end]), zeros))
-awx = np.concatenate((zeros, awx[idx_start:idx_end], np.flip(awx[idx_start:idx_end]), zeros))
-awy = np.concatenate((zeros, awy[idx_start:idx_end], np.flip(awy[idx_start:idx_end]), zeros))
-awz = np.concatenate((zeros, awz[idx_start:idx_end], np.flip(awz[idx_start:idx_end]), zeros))
-# t = np.arange(0, dt*(len(x)), dt)
-t = np.linspace(0, dt*len(x), len(x))
+if True:
+    plt.figure()
+    plt.plot(t, x, label='x')
+    plt.plot(t, y, label='y')
+    plt.plot(t, z, label='z')
+    plt.title('End-effector position')
+    plt.legend()
 
-plt.figure()
-plt.plot(t, x, label='x')
-plt.plot(t, y, label='y')
-plt.plot(t, z, label='z')
-plt.title('End-effector position')
-plt.legend()
+    plt.figure()
+    plt.plot(t, qx, label='qx')
+    plt.plot(t, qy, label='qy')
+    plt.plot(t, qz, label='qz')
+    plt.plot(t, qw, label='qw')
+    plt.axhline(y=0, color='k', linestyle='--')
+    plt.title('End-effector orientation (quaternion)')
+    plt.legend()
 
-plt.figure()
-plt.plot(t, qx, label='qx')
-plt.plot(t, qy, label='qy')
-plt.plot(t, qz, label='qz')
-plt.plot(t, qw, label='qw')
-plt.axhline(y=0, color='k', linestyle='--')
-plt.title('End-effector orientation (quaternion)')
-plt.legend()
+if False:
+    plt.figure()
+    plt.plot(vx, label='vx')
+    plt.plot(vy, label='vy')
+    plt.plot(vz, label='vz')
+    plt.axhline(y=0, color='k', linestyle='--')
+    plt.title('End-effector linear velocity')
+    plt.legend()
 
-plt.figure()
-plt.plot(vx, label='vx')
-plt.plot(vy, label='vy')
-plt.plot(vz, label='vz')
-plt.axhline(y=0, color='k', linestyle='--')
-plt.title('End-effector linear velocity')
-plt.legend()
+    plt.figure()
+    plt.plot(wx, label='wx')
+    plt.plot(wy, label='wy')
+    plt.plot(wz, label='wz')
+    plt.axhline(y=0, color='k', linestyle='--')
+    plt.title('End-effector angular velocity')
+    plt.legend()
 
-plt.figure()
-plt.plot(wx, label='wx')
-plt.plot(wy, label='wy')
-plt.plot(wz, label='wz')
-plt.axhline(y=0, color='k', linestyle='--')
-plt.title('End-effector angular velocity')
-plt.legend()
+    plt.figure()
+    plt.plot(t, ax, label='ax')
+    plt.plot(t, ay, label='ay')
+    plt.plot(t, az, label='az')
+    plt.axhline(y=0, color='k', linestyle='--')
+    plt.title('End-effector linear acceleration')
+    plt.legend()
 
-plt.figure()
-plt.plot(t, ax, label='ax')
-plt.plot(t, ay, label='ay')
-plt.plot(t, az, label='az')
-plt.axhline(y=0, color='k', linestyle='--')
-plt.title('End-effector linear acceleration')
-plt.legend()
-
-plt.figure()
-plt.plot(t, awx, label='awx')
-plt.plot(t, awy, label='awy')
-plt.plot(t, awz, label='awz')
-plt.axhline(y=0, color='k', linestyle='--')
-plt.title('End-effector angular acceleration')
-plt.legend()
+    plt.figure()
+    plt.plot(t, awx, label='awx')
+    plt.plot(t, awy, label='awy')
+    plt.plot(t, awz, label='awz')
+    plt.axhline(y=0, color='k', linestyle='--')
+    plt.title('End-effector angular acceleration')
+    plt.legend()
 
 df = pd.DataFrame({
     't': t,
