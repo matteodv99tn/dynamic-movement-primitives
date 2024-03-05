@@ -141,10 +141,11 @@ for i in range(N):
     z[i] = frame.translation[2]
 
     quat = Rot.from_matrix(frame.rotation).as_quat()
+    if quat.dot(np.array([0, 0, 0, 1.0])) < 0:
+        quat = -quat
     if i > 0:
         if np.dot(quat, prev_quat) < 0:
             quat = -quat
-
     prev_quat = quat
 
     qx[i] = quat[0]

@@ -66,6 +66,9 @@ int main() {
     std::vector<double> omegadiff_x = dmp::test::toStdVector(omega_traj.col(0));
     std::vector<double> omegadiff_y = dmp::test::toStdVector(omega_traj.col(1));
     std::vector<double> omegadiff_z = dmp::test::toStdVector(omega_traj.col(2));
+    std::vector<double> omegaoriginal_x  = dmp::test::toStdVector(omega_original.col(0));
+    std::vector<double> omegaoriginal_y  = dmp::test::toStdVector(omega_original.col(1));
+    std::vector<double> omegaoriginal_z  = dmp::test::toStdVector(omega_original.col(2));
     std::vector<double> omegajac_x  = dmp::test::toStdVector(omega_rotated.col(0));
     std::vector<double> omegajac_y  = dmp::test::toStdVector(omega_rotated.col(1));
     std::vector<double> omegajac_z  = dmp::test::toStdVector(omega_rotated.col(2));
@@ -74,19 +77,25 @@ int main() {
     gp_omega << "set xlabel 'Time (ticks)'\n";
     gp_omega << "set ylabel 'Angular velocity'\n";
     gp_omega << "plot '-' with lines title '{/Symbol w}_x diff' linecolor 1"
-                ", '-' with lines title '{/Symbol w}_x data' dashtype 2 linecolor 1";
+                ", '-' with lines title '{/Symbol w}_x data' dashtype 2 linecolor 1"
+                ", '-' with lines title '{/Symbol w}_x original' dashtype 3 linecolor 1";
     gp_omega << ", '-' with lines title '{/Symbol w}_y diff' linecolor 2"
-                ", '-' with lines title '{/Symbol w}_y data' dashtype 2 linecolor 2";
+                ", '-' with lines title '{/Symbol w}_y data' dashtype 2 linecolor 2"
+                ", '-' with lines title '{/Symbol w}_y original' dashtype 3 linecolor 2";
     gp_omega << ", '-' with lines title '{/Symbol w}_z diff' linecolor 3"
-                ", '-' with lines title '{/Symbol w}_z data' dashtype 2 linecolor 3";
+                ", '-' with lines title '{/Symbol w}_z data' dashtype 2 linecolor 3"
+                ", '-' with lines title '{/Symbol w}_z original' dashtype 3 linecolor 3";
     gp_omega << "\n";
 
     gp_omega.send1d(omegadiff_x);
     gp_omega.send1d(omegajac_x);
+    gp_omega.send1d(omegaoriginal_x);
     gp_omega.send1d(omegadiff_y);
     gp_omega.send1d(omegajac_y);
+    gp_omega.send1d(omegaoriginal_y);
     gp_omega.send1d(omegadiff_z);
     gp_omega.send1d(omegajac_z);
+    gp_omega.send1d(omegaoriginal_z);
 
     return 0;
 }
