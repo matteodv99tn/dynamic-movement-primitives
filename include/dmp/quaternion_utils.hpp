@@ -25,6 +25,10 @@ namespace dmp {
             const Eigen::MatrixXd& q_traj, const double& dt
     );
 
+    Eigen::MatrixXd rotate_angular_velocity(
+            const Eigen::MatrixXd& omega, const Eigen::MatrixXd& q_traj
+    );
+
 }  // namespace dmp
 
 

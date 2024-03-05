@@ -55,18 +55,20 @@ int main() {
 
     Gnuplot gp_omega;  // Angular velocity comparison
 
+    // Eigen::MatrixXd omega_original = dmp::getAngularVelocityTrajectory(trajectory);
+    // for (std::size_t i = 0; i < omega_original.rows(); ++i) {
+    //     Eigen::Quaterniond qrot(Eigen::Vector4d(q_traj.row(i)));
+    //     omega_original.row(i) = qrot * omega_original.row(i);
+    // }
     Eigen::MatrixXd omega_original = dmp::getAngularVelocityTrajectory(trajectory);
-    for (std::size_t i = 0; i < omega_original.rows(); ++i) {
-        Eigen::Quaterniond qrot(Eigen::Vector4d(q_traj.row(i)));
-        omega_original.row(i) = qrot * omega_original.row(i);
-    }
+    Eigen::MatrixXd omega_rotated = dmp::rotate_angular_velocity(omega_original, q_traj);
 
     std::vector<double> omegadiff_x = dmp::test::toStdVector(omega_traj.col(0));
     std::vector<double> omegadiff_y = dmp::test::toStdVector(omega_traj.col(1));
     std::vector<double> omegadiff_z = dmp::test::toStdVector(omega_traj.col(2));
-    std::vector<double> omegajac_x  = dmp::test::toStdVector(omega_original.col(0));
-    std::vector<double> omegajac_y  = dmp::test::toStdVector(omega_original.col(1));
-    std::vector<double> omegajac_z  = dmp::test::toStdVector(omega_original.col(2));
+    std::vector<double> omegajac_x  = dmp::test::toStdVector(omega_rotated.col(0));
+    std::vector<double> omegajac_y  = dmp::test::toStdVector(omega_rotated.col(1));
+    std::vector<double> omegajac_z  = dmp::test::toStdVector(omega_rotated.col(2));
 
     gp_omega << "set title 'Angular velocity comparison\n";
     gp_omega << "set xlabel 'Time (ticks)'\n";
