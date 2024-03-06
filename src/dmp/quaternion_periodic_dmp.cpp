@@ -99,6 +99,7 @@ Eigen::MatrixXd QuaternionPeriodicDmp::evaluateDesiredForce(
         fd.row(i) = evaluateDesiredForce(
                 q_i, Eigen::Vector3d(omega.row(i)), Eigen::Vector3d(domega_dt.row(i))
         );
+        // std::cout << "fd.row(" << i << ") = " << fd.row(i) << std::endl;
     }
     return fd;
 }
