@@ -21,6 +21,10 @@ namespace dmp::test {
             const Eigen::MatrixXd& q_sim, const Eigen::MatrixXd& q_des
     );
 
+    void plot_position_trajectory(
+            const Eigen::MatrixXd& x_sim, const Eigen::MatrixXd& x_des
+    );
+
     void plot_forcing_term(
             const Eigen::MatrixXd& F_learned, const Eigen::MatrixXd& F_desired
     );

@@ -2,6 +2,7 @@
 
 #include "defines.hpp"
 #include "dmp/basis_function/periodic_gaussian_kernel.hpp"
+#include "dmp/multidof_periodic_dmp.hpp"
 #include "dmp/quaternion_periodic_dmp.hpp"
 #include "dmp/quaternion_utils.hpp"
 #include "dmp/utils.hpp"
@@ -21,6 +22,9 @@ void dmp::test::batch_learning_test(
 ) {
     // Extract data
     Eigen::VectorXd time                = dmp::getTimeVector(data);
+    Eigen::MatrixXd pos_traj            = dmp::getPositionTrajectory(data);
+    Eigen::MatrixXd vel_traj            = dmp::getVelocityTrajectory(data);
+    Eigen::MatrixXd acc_traj            = dmp::getAccelerationTrajectory(data);
     Eigen::MatrixXd q_traj              = dmp::getQuaternionTrajectory(data);
     Eigen::MatrixXd omega_traj_original = dmp::getAngularVelocityTrajectory(data);
     Eigen::MatrixXd alpha_traj_original = dmp::getAngularAccelerationTrajectory(data);
@@ -57,21 +61,29 @@ void dmp::test::batch_learning_test(
 
     // Create DMP
     auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(N_basis);
-    dmp::QuaternionPeriodicDmp dmp(basis, alpha);
+    dmp::MultiDofPeriodicDmp   dmp_position(basis, 3, alpha);
+    dmp::QuaternionPeriodicDmp dmp_orientation(basis, alpha);
 
     // Set properties
+    dmp_position.setInitialConditions(pos_traj.row(0), vel_traj.row(0));
+    dmp_position.setSamplingPeriod(dt);
+    dmp_position.setObservationPeriod(T_period);
+
     Eigen::Quaterniond q0(Eigen::Vector4d(q_traj.row(0)));
-    dmp.setInitialConditions(q0, omega_traj.row(0));
-    dmp.setSamplingPeriod(dt);
-    dmp.setObservationPeriod(T_period);
+    dmp_orientation.setInitialConditions(q0, omega_traj.row(0));
+    dmp_orientation.setSamplingPeriod(dt);
+    dmp_orientation.setObservationPeriod(T_period);
 
     std::cout << sep << " Batch Learning Test - DMP parameters " << sep << "\n";
-    std::cout << "Tau:   " << dmp.getTau() << "\n";
-    std::cout << "Omega: " << 1 / dmp.getTau() << "\n";
+    std::cout << "Tau:   " << dmp_orientation.getTau() << "\n";
+    std::cout << "Omega: " << 1 / dmp_orientation.getTau() << "\n";
 
 
     // Prepare for storage
     std::size_t        t_sim = Ns * N_reps;
+    Eigen::MatrixXd    pos_hist(t_sim, 3);
+    Eigen::MatrixXd    vel_hist(t_sim, 3);
+    Eigen::MatrixXd    acc_hist(t_sim, 3);
     Eigen::MatrixXd    q_hist(t_sim, 4);
     Eigen::MatrixXd    log_hist(t_sim, 3);
     Eigen::MatrixXd    omega_hist(t_sim, 3);
@@ -79,17 +91,26 @@ void dmp::test::batch_learning_test(
     Eigen::Quaterniond q;
 
     // Perform batch learning
-    Eigen::VectorXd phi = dmp.timeToPhase(time);
-    dmp.batchLearn(phi, q_traj, omega_traj, alpha_traj);
+    Eigen::VectorXd phi_position = dmp_position.timeToPhase(time);
+    Eigen::VectorXd phi_orientation = dmp_orientation.timeToPhase(time);
+    dmp_position.batchLearn(phi_position, pos_traj, vel_traj, acc_traj);
+    dmp_orientation.batchLearn(phi_orientation, q_traj, omega_traj, alpha_traj);
 
     // Integrate the system
     for (int i = 0; i < t_sim; i++) {
-        q                 = dmp.getQuaternionState();
+
+        pos_hist.row(i) = dmp_position.getPositionState();
+        vel_hist.row(i) = dmp_position.getVelocityState();
+        acc_hist.row(i) = dmp_position.getAccelerationState();
+
+        q                 = dmp_orientation.getQuaternionState();
         q_hist.row(i)     = q.coeffs();
-        log_hist.row(i)   = dmp.getLogarithm();
-        omega_hist.row(i) = dmp.getAngularVelocityState();
-        alpha_hist.row(i) = dmp.getAngularAcceleration();
-        dmp.step();
+        log_hist.row(i)   = dmp_orientation.getLogarithm();
+        omega_hist.row(i) = dmp_orientation.getAngularVelocityState();
+        alpha_hist.row(i) = dmp_orientation.getAngularAcceleration();
+
+        dmp_orientation.step();
+        dmp_position.step();
     }
 
     Eigen::MatrixXd diff = q_traj - q_hist.block(0, 0, Ns, 4);
@@ -99,12 +120,13 @@ void dmp::test::batch_learning_test(
 
     // Plot results
     dmp::test::plot_quaternion_trajectory(q_hist, q_traj);
-    // dmp::test::plot_angular_velocity(omega_hist, omega_traj);
-    // dmp::test::plot_angular_acceleration(alpha_hist, alpha_traj);
-    // dmp::test::plot_forcing_term(
-    //         dmp.getLearnedForcingFunction(phi),
-    //         dmp.evaluateDesiredForce(q_traj, omega_traj, alpha_traj)
-    // );
+    dmp::test::plot_position_trajectory(pos_hist, pos_traj);
+    dmp::test::plot_angular_velocity(omega_hist, omega_traj);
+    dmp::test::plot_angular_acceleration(alpha_hist, alpha_traj);
+    dmp::test::plot_forcing_term(
+            dmp_orientation.getLearnedForcingFunction(phi_orientation),
+            dmp_orientation.evaluateDesiredForce(q_traj, omega_traj, alpha_traj)
+    );
 }
 
 void dmp::test::plot_quaternion_trajectory(
@@ -141,6 +163,36 @@ void dmp::test::plot_quaternion_trajectory(
     gp.send1d(qz_des);
     gp.send1d(qw);
     gp.send1d(qw_des);
+}
+
+void dmp::test::plot_position_trajectory(
+        const Eigen::MatrixXd& x_sim, const Eigen::MatrixXd& x_des
+) {
+    std::vector<double> x  = dmp::test::toStdVector(x_sim.col(0));
+    std::vector<double> y  = dmp::test::toStdVector(x_sim.col(1));
+    std::vector<double> z  = dmp::test::toStdVector(x_sim.col(2));
+    std::vector<double> xd = dmp::test::toStdVector(x_des.col(0));
+    std::vector<double> yd = dmp::test::toStdVector(x_des.col(1));
+    std::vector<double> zd = dmp::test::toStdVector(x_des.col(2));
+
+    Gnuplot gp;
+    gp << "set title 'Cartesian Trajectory'\n";
+    gp << "set xlabel 'Time (ticks)'\n";
+    gp << "set ylabel 'Position'\n";
+    gp << "plot '-' with lines title 'x' linecolor 1"
+          ", '-' with lines title 'x des' dashtype 2 linecolor 1";
+    gp << ", '-' with lines title 'y' linecolor 2"
+          ", '-' with lines title 'y des' dashtype 2 linecolor 2";
+    gp << ", '-' with lines title 'z' linecolor 3"
+          ", '-' with lines title 'z des' dashtype 2 linecolor 3";
+    gp << "\n";
+
+    gp.send1d(x);
+    gp.send1d(xd);
+    gp.send1d(y);
+    gp.send1d(yd);
+    gp.send1d(z);
+    gp.send1d(zd);
 }
 
 void dmp::test::plot_forcing_term(
