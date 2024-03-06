@@ -18,7 +18,8 @@ void dmp::test::batch_learning_test(
         const double           alpha,
         const std::size_t      N_basis,
         bool                   rotate_omega,
-        const std::size_t      N_reps
+        const std::size_t      N_reps,
+        const dmp::test::LearningMethod    method
 ) {
     // Extract data
     Eigen::VectorXd time                = dmp::getTimeVector(data);
@@ -48,8 +49,12 @@ void dmp::test::batch_learning_test(
     alpha_traj = dmp::finiteDifference(omega_traj, dt);
 
 
-    std::string sep = "==========";
-    std::cout << sep << " Batch Learning Test - Setting " << sep << "\n";
+    std::string sep = "=============";
+    std::cout << sep << " Test Settings " << sep << "\n";
+    if(method == dmp::test::LearningMethod::BATCH)
+        std::cout << "Learning method:       batch\n";
+    else
+        std::cout << "Learning method:       incremental\n";
     std::cout << "Alpha:                 " << alpha << "\n";
     std::cout << "Num. of basis:         " << N_basis << "\n";
     std::cout << "Sampling period:       " << dt << "\n";
@@ -74,7 +79,6 @@ void dmp::test::batch_learning_test(
     dmp_orientation.setSamplingPeriod(dt);
     dmp_orientation.setObservationPeriod(T_period);
 
-    std::cout << sep << " Batch Learning Test - DMP parameters " << sep << "\n";
     std::cout << "Tau:   " << dmp_orientation.getTau() << "\n";
     std::cout << "Omega: " << 1 / dmp_orientation.getTau() << "\n";
 
@@ -93,12 +97,15 @@ void dmp::test::batch_learning_test(
     // Perform batch learning
     Eigen::VectorXd phi_position = dmp_position.timeToPhase(time);
     Eigen::VectorXd phi_orientation = dmp_orientation.timeToPhase(time);
-    dmp_position.batchLearn(phi_position, pos_traj, vel_traj, acc_traj);
-    dmp_orientation.batchLearn(phi_orientation, q_traj, omega_traj, alpha_traj);
+    if (method == dmp::test::LearningMethod::BATCH) {
+        dmp_position.batchLearn(phi_position, pos_traj, vel_traj, acc_traj);
+        dmp_orientation.batchLearn(phi_orientation, q_traj, omega_traj, alpha_traj);
+    }
 
     // Integrate the system
     for (int i = 0; i < t_sim; i++) {
 
+        // Store states
         pos_hist.row(i) = dmp_position.getPositionState();
         vel_hist.row(i) = dmp_position.getVelocityState();
         acc_hist.row(i) = dmp_position.getAccelerationState();
@@ -109,24 +116,29 @@ void dmp::test::batch_learning_test(
         omega_hist.row(i) = dmp_orientation.getAngularVelocityState();
         alpha_hist.row(i) = dmp_orientation.getAngularAcceleration();
 
+        // Incremental learn
+        if ((method == dmp::test::LearningMethod::INCREMENTAL) && (i < Ns)) {
+            Eigen::Quaterniond q_tmp(Eigen::Vector4d(q_traj.row(i)));
+            dmp_position.incrementalLearn(phi_position(i), pos_traj.row(i), vel_traj.row(i), acc_traj.row(i));
+            dmp_orientation.incrementalLearn(phi_orientation(i), q_tmp, omega_traj.row(i), alpha_traj.row(i));
+        }
+
+        // Step integration
         dmp_orientation.step();
         dmp_position.step();
     }
 
     Eigen::MatrixXd diff = q_traj - q_hist.block(0, 0, Ns, 4);
 
-    std::cout << sep << " Batch Learning Test - Results " << sep << "\n";
-    std::cout << "Difference norm: " << diff.norm() << "\n";
-
     // Plot results
     dmp::test::plot_quaternion_trajectory(q_hist, q_traj);
     dmp::test::plot_position_trajectory(pos_hist, pos_traj);
-    dmp::test::plot_angular_velocity(omega_hist, omega_traj);
-    dmp::test::plot_angular_acceleration(alpha_hist, alpha_traj);
-    dmp::test::plot_forcing_term(
-            dmp_orientation.getLearnedForcingFunction(phi_orientation),
-            dmp_orientation.evaluateDesiredForce(q_traj, omega_traj, alpha_traj)
-    );
+    // dmp::test::plot_angular_velocity(omega_hist, omega_traj);
+    // dmp::test::plot_angular_acceleration(alpha_hist, alpha_traj);
+    // dmp::test::plot_forcing_term(
+    //         dmp_orientation.getLearnedForcingFunction(phi_orientation),
+    //         dmp_orientation.evaluateDesiredForce(q_traj, omega_traj, alpha_traj)
+    // );
 }
 
 void dmp::test::plot_quaternion_trajectory(

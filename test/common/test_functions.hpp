@@ -9,12 +9,18 @@ namespace dmp::test {
     // Filename inside the test/data/ directory
     Eigen::MatrixXd load_file(const std::string& file_name);
 
+    enum class LearningMethod {
+        BATCH,
+        INCREMENTAL
+    };
+
     void batch_learning_test(
             const Eigen::MatrixXd& data,
             const double           alpha,
             const std::size_t      N_basis,
             bool                   rotate_omega,
-            const std::size_t      N_reps
+            const std::size_t      N_reps,
+            const LearningMethod    method = LearningMethod::BATCH
     );
 
     void plot_quaternion_trajectory(
