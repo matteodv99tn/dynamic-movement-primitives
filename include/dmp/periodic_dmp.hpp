@@ -46,13 +46,12 @@ namespace dmp {
         );
         void setInitialConditions(const Eigen::Vector2d& y0, const double phi0 = 0);
 
-        void step();
+        void            step();
         Eigen::Vector3d getState() const;
         double          getPhase() const;
 
 
     private:
-
         double _r;
 
         // Weights for the basis function

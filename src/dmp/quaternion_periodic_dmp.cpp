@@ -26,9 +26,7 @@ QuaternionPeriodicDmp::QuaternionPeriodicDmp(
     resetWeights();
 }
 
-void QuaternionPeriodicDmp::setObservationPeriod(const double T) {
-    _tau = T / (2 * M_PI);
-}
+void QuaternionPeriodicDmp::setObservationPeriod(const double T) { _tau = T; }
 
 void QuaternionPeriodicDmp::resetWeights() {
     _w = Eigen::MatrixXd::Zero(_N(), 3);
@@ -37,11 +35,11 @@ void QuaternionPeriodicDmp::resetWeights() {
 }
 
 double QuaternionPeriodicDmp::timeToPhase(const double& t) const {
-    return t * _Omega();
+    return t * _Omega() * 2 * M_PI;
 }
 
 Eigen::VectorXd QuaternionPeriodicDmp::timeToPhase(const Eigen::VectorXd& t) const {
-    return t * _Omega();
+    return t * _Omega() * 2 * M_PI;
 }
 
 double QuaternionPeriodicDmp::getPhase() const { return _phi; }
@@ -99,7 +97,6 @@ Eigen::MatrixXd QuaternionPeriodicDmp::evaluateDesiredForce(
         fd.row(i) = evaluateDesiredForce(
                 q_i, Eigen::Vector3d(omega.row(i)), Eigen::Vector3d(domega_dt.row(i))
         );
-        // std::cout << "fd.row(" << i << ") = " << fd.row(i) << std::endl;
     }
     return fd;
 }
@@ -156,13 +153,9 @@ void QuaternionPeriodicDmp::batchLearn(
 }
 
 void QuaternionPeriodicDmp::step() {
-    static std::size_t i = 0;
-
-
     Eigen::Vector3d log = dmp::logarithmic_map(_g, _q);
     Eigen::Vector3d f   = (*_basis)(_phi, _w);
     _deta_dt            = _Omega() * (_alpha * (2 * _beta * log - _eta) + f);
-    // _deta_dt /= _tau;
     _eta += _deta_dt * _dt;
 
     _q = dmp::exponential_map(0.5 * _dt * _Omega() * _eta, _q);
@@ -179,7 +172,6 @@ void QuaternionPeriodicDmp::step() {
         _phi_hist(idx)           = phi_curr;
     }
 
-    _phi += _Omega() * _dt;
-    i++;
+    _phi += _Omega() * 2 * M_PI * _dt;
     idx++;
 }

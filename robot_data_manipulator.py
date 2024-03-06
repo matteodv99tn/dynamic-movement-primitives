@@ -5,56 +5,51 @@ import pinocchio as pin
 import os.path
 from scipy.spatial.transform import Rotation as Rot
 
-prj_dir = os.path.dirname(os.path.realpath(__file__))
-outfile = os.path.join(prj_dir, 'test', 'data', 'synthetic.csv')
 
+filename = os.path.expanduser(os.path.join('~', 'dmps', 'data', 'joint_states.csv'))
+prj_dir = os.path.dirname(__file__)
+outfile = os.path.expanduser(os.path.join(prj_dir, 'test', 'data', 'robot.csv'))
 
-def min_jerk_traj(q0: np.ndarray, q1: np.ndarray, t: np.ndarray):
-    # https://arxiv.org/pdf/2102.07459.pdf
-    T = t[-1] - t[0]
-    tau = (t - t[0]) / T
-    pos = np.zeros((len(q0), len(t)))
-    vel = np.zeros((len(q0), len(t)))
-    acc = np.zeros((len(q0), len(t)))
-    for i in range(len(q0)):
-        pos[i, :] = q0[i] + (q1[i] - q0[i]) * (10 * tau**3 - 15 * tau**4 +
-                                               6 * tau**5)
-        vel[i, :] = (q1[i] - q0[i]) * (30 * tau**2 - 60 * tau**3 + 30 * tau**4) / T
-        acc[i, :] = (q1[i] - q0[i]) * (60 * tau - 180 * tau**2 + 120 * tau**3) / T**2
-    return pos, vel, acc
-
-
-Thalf = 2.0
+df = pd.read_csv(filename)
 dt = 0.002
-N = int(Thalf / dt)
-tfirst = np.arange(0, dt * N, dt)
-tsecond = np.arange(dt * N, 2 * dt * N, dt)
 
-q0 = np.array([0.1, 0.3, 0.5, -0.5, -1.0, 0])
-q1 = np.array([0.5, 0.8, -0.1, 0.5, -0.4, 1.5])
+idx_start = 170
+idx_end = 2250
 
-Q1, Qd1, Qdd1 = min_jerk_traj(q0, q1, tfirst)
-Q2, Qd2, Qdd2 = min_jerk_traj(q1, q0, tsecond)
+q1 = df.get('q1').values[idx_start:idx_end]
+q2 = df.get('q2').values[idx_start:idx_end]
+q3 = df.get('q3').values[idx_start:idx_end]
+q4 = df.get('q4').values[idx_start:idx_end]
+q5 = df.get('q5').values[idx_start:idx_end]
+q6 = df.get('q6').values[idx_start:idx_end]
+qd1 = df.get('v1').values[idx_start:idx_end]
+qd2 = df.get('v2').values[idx_start:idx_end]
+qd3 = df.get('v3').values[idx_start:idx_end]
+qd4 = df.get('v4').values[idx_start:idx_end]
+qd5 = df.get('v5').values[idx_start:idx_end]
+qd6 = df.get('v6').values[idx_start:idx_end]
 
-Nreps = 100
-Qinit = np.full((Nreps, 6), q0).T
-Qdinit = np.zeros((Nreps, 6)).T
+Q = np.array([q1, q2, q3, q4, q5, q6])
+Qd = np.array([qd1, qd2, qd3, qd4, qd5, qd6])
 
-t = np.concatenate((tfirst, tsecond))
+Q = np.hstack((Q, np.flip(Q, axis=1)))
+Qd = np.hstack((Qd, np.flip(Qd, axis=1)))
+Qdd = np.hstack((np.zeros((6,1)), np.diff(Qd, axis=1) / dt))
 
-Q = np.hstack((Qinit, Q1, Q2, Qinit)).T
-Qd = np.hstack((Qdinit, Qd1, Qd2, Qdinit)).T
-Qdd = np.hstack((Qdinit, Qdd1, Qdd2, Qdinit)).T
-
-q1 = Q[:, 0]
-q2 = Q[:, 1]
-q3 = Q[:, 2]
-q4 = Q[:, 3]
-q5 = Q[:, 4]
-q6 = Q[:, 5]
-
-t = np.arange(0, dt * len(q1), dt)
-N = len(t)
+q1 = Q[0, :]
+q2 = Q[1, :]
+q3 = Q[2, :]
+q4 = Q[3, :]
+q5 = Q[4, :]
+q6 = Q[5, :]
+qd1 = Qd[0, :]
+qd2 = Qd[1, :]
+qd3 = Qd[2, :]
+qd4 = Qd[3, :]
+qd5 = Qd[4, :]
+qd6 = Qd[5, :]
+N = len(q1)
+t = np.arange(0, dt * N, dt)
 
 if False:
     plt.figure()
@@ -67,29 +62,15 @@ if False:
     plt.legend()
     plt.title('Joint positions')
 
-    q1dnum = np.diff(q1) / dt
-    q1ddnum = np.diff(q1dnum) / dt
-
     plt.figure()
-    plt.plot(t, Qd[:, 0], label='qd1')
-    plt.plot(t, Qd[:, 1], label='qd2')
-    plt.plot(t, Qd[:, 2], label='qd3')
-    plt.plot(t, Qd[:, 3], label='qd4')
-    plt.plot(t, Qd[:, 4], label='qd5')
-    plt.plot(t, Qd[:, 5], label='qd6')
+    plt.plot(t, Qd[0], label='qd1')
+    plt.plot(t, Qd[1], label='qd2')
+    plt.plot(t, Qd[2], label='qd3')
+    plt.plot(t, Qd[3], label='qd4')
+    plt.plot(t, Qd[4], label='qd5')
+    plt.plot(t, Qd[5], label='qd6')
     plt.legend()
     plt.title('Joint velocities')
-
-    plt.figure()
-    plt.plot(t, Qdd[:, 0], label='qdd1')
-    plt.plot(t, Qdd[:, 1], label='qdd2')
-    plt.plot(t, Qdd[:, 2], label='qdd3')
-    plt.plot(t, Qdd[:, 3], label='qdd4')
-    plt.plot(t, Qdd[:, 4], label='qdd5')
-    plt.plot(t, Qdd[:, 5], label='qdd6')
-    plt.legend()
-    plt.title('Joint accelerations')
-    plt.show()
 
 mdl = pin.buildModelsFromUrdf('ur.urdf')[0]
 data = mdl.createData()
@@ -109,7 +90,6 @@ vz = np.zeros(N)
 wx = np.zeros(N)
 wy = np.zeros(N)
 wz = np.zeros(N)
-
 ax = np.zeros(N)
 ay = np.zeros(N)
 az = np.zeros(N)
@@ -125,10 +105,12 @@ print('y:', tmp[1])
 print('z:', tmp[2])
 print('w:', tmp[3])
 
+print("Q:", Q.shape)
+
 for i in range(N):
-    q = Q[i, :]
-    v = Qd[i, :]
-    a = Qdd[i, :]
+    q = Q[:, i]
+    v = Qd[:, i]
+    a = Qdd[:, i]
 
     pin.forwardKinematics(mdl, data, q, v, a)
     frame = pin.updateFramePlacement(mdl, data, RFid)
@@ -167,13 +149,6 @@ for i in range(N):
     awy[i] = a_ee.angular[1]
     awz[i] = a_ee.angular[2]
 
-Qdnorm = np.linalg.norm(Qd, axis=0)
-
-idx_start = 0
-idx_end = N
-
-ones = np.ones(10)
-zeros = np.zeros(10)
 
 if True:
     plt.figure()
@@ -192,7 +167,7 @@ if True:
     plt.title('End-effector orientation (quaternion)')
     plt.legend()
 
-if True:
+if False:
     plt.figure()
     plt.plot(vx, label='vx')
     plt.plot(vy, label='vy')
@@ -246,9 +221,7 @@ df = pd.DataFrame({
     'awx': awx,
     'awy': awy,
     'awz': awz
-})
+    })
 df.to_csv(outfile, index=False, header=False)
-
-print('Data saved to', outfile)
 
 plt.show()

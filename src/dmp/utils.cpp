@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <Eigen/Dense>
 #include <fstream>
+#include <iostream>
 #include <optional>
 #include <string>
 #include <sys/stat.h>
@@ -97,6 +98,18 @@ Eigen::MatrixXd dmp::getQuaternionTrajectory(const Eigen::MatrixXd& data) {
     q.col(1) = data.col(dmp::traindatacolumn::quaty);
     q.col(2) = data.col(dmp::traindatacolumn::quatz);
     q.col(3) = data.col(dmp::traindatacolumn::quatw);
+
+    const double th = 1e-15;
+    for (Eigen::Index i = 0; i < data.rows(); i++) {
+        // normalize the quaternion
+        double norm_error = std::abs(q.row(i).norm() - 1);
+        if (norm_error > th) {
+            std::cout << "Quaternion at row " << i
+                      << " is not normalized; norm error: " << norm_error << std::endl;
+        }
+
+        q.row(i).normalize();
+    }
     return q;
 }
 

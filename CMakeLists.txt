@@ -38,18 +38,11 @@ add_library(dmp STATIC
     src/dmp/periodic_dmp.cpp
     src/dmp/multidof_periodic_dmp.cpp
     src/dmp/quaternion_periodic_dmp.cpp
-    src/dmp/quaternion_periodic_v2.cpp
     src/dmp/utils.cpp
 )
 target_link_libraries(dmp Eigen3::Eigen range-v3)
 target_include_directories(dmp
     PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include
     )
-
-
-add_executable(main src/main.cpp src/quaternion.cpp )
-target_link_libraries(main dmp)
-add_executable(test src/test.cpp)
-
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)

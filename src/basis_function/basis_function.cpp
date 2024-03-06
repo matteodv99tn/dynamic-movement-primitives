@@ -24,17 +24,21 @@ Eigen::VectorXd BasisFunction::operator()(const double& arg, const Eigen::Matrix
     return (operator()(arg).transpose() * w).transpose();
 }
 
-Eigen::VectorXd BasisFunction::operator()(const Eigen::VectorXd& arg, const Eigen::VectorXd& w) const{
+Eigen::VectorXd BasisFunction::operator()(
+        const Eigen::VectorXd& arg, const Eigen::VectorXd& w
+) const {
     Eigen::VectorXd result(arg.size());
     for (std::size_t i = 0; i < arg.size(); ++i) result(i) = operator()(arg(i), w);
     return result;
 }
 
-Eigen::MatrixXd BasisFunction::operator()(const Eigen::VectorXd& arg, const Eigen::MatrixXd& w) const{
+Eigen::MatrixXd BasisFunction::operator()(
+        const Eigen::VectorXd& arg, const Eigen::MatrixXd& w
+) const {
     Eigen::MatrixXd result(arg.size(), w.cols());
     for (std::size_t i = 0; i < w.cols(); ++i) {
         Eigen::VectorXd col = w.col(i);
-        result.col(i) = operator()(arg, col);
+        result.col(i)       = operator()(arg, col);
     }
     return result;
 }

@@ -15,7 +15,7 @@ Eigen::Vector3d dmp::logarithmic_map(const Eigen::Quaterniond& q) {
     norm += u(1) * u(1);
     norm += u(2) * u(2);
 
-    if (norm < 1e-10) return Eigen::Vector3d::Zero();
+    if (norm < 1e-12) return Eigen::Vector3d::Zero();
 
     Eigen::Vector3d res = std::acos(nu) * u / std::sqrt(norm);
 
@@ -40,8 +40,9 @@ Eigen::Quaterniond dmp::exponential_map(const Eigen::Vector3d& v) {
 
     const double          v_norm = v.norm();
     const Eigen::Vector3d u      = std::sin(v_norm) * v / v_norm;
-
-    return Eigen::Quaterniond(std::cos(v_norm), u(0), u(1), u(2));
+    Eigen::Quaterniond q_res (std::cos(v_norm), u(0), u(1), u(2));
+    q_res.normalize();
+    return q_res;
 }
 
 Eigen::Quaterniond dmp::exponential_map(
@@ -85,7 +86,6 @@ Eigen::MatrixXd dmp::quaternion_numerical_diff(
 Eigen::MatrixXd dmp::rotate_angular_velocity(
         const Eigen::MatrixXd& omega, const Eigen::MatrixXd& q_traj
 ) {
-
     Eigen::MatrixXd omega_rot(omega.rows(), omega.cols());
     for (std::size_t i = 0; i < omega.rows(); ++i) {
         Eigen::Quaterniond qrot(Eigen::Vector4d(q_traj.row(i)));

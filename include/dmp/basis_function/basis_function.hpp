@@ -19,8 +19,10 @@ namespace dmp {
         Eigen::VectorXd operator()(const double& arg) const;
         double          operator()(const double& arg, const Eigen::VectorXd& w) const;
         Eigen::VectorXd operator()(const double& arg, const Eigen::MatrixXd& w) const;
-        Eigen::VectorXd operator()(const Eigen::VectorXd& arg, const Eigen::VectorXd& w) const;
-        Eigen::MatrixXd operator()(const Eigen::VectorXd& arg, const Eigen::MatrixXd& w) const;
+        Eigen::VectorXd operator()(const Eigen::VectorXd& arg, const Eigen::VectorXd& w)
+                const;
+        Eigen::MatrixXd operator()(const Eigen::VectorXd& arg, const Eigen::MatrixXd& w)
+                const;
 
     protected:
         std::size_t _N;  // number of basis functions

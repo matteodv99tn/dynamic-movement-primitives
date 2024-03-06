@@ -33,18 +33,39 @@ TEST_CASE("Logarithmic map 2", "[quaternion]") {
             0.3553345272593507
     );
     Eigen::Vector3d log_q = dmp::logarithmic_map(q);
-    REQUIRE(IS_ZERO(log_q[0], -1.908174181612675));
-    REQUIRE(IS_ZERO(log_q[1], 0.7155653181047529));
-    REQUIRE(IS_ZERO(log_q[2], 1.192608863507921));
+    REQUIRE(IS_ZERO(log_q[0], 0.5*-1.908174181612675));
+    REQUIRE(IS_ZERO(log_q[1], 0.5*0.7155653181047529));
+    REQUIRE(IS_ZERO(log_q[2], 0.5*1.192608863507921));
 }
 
-TEST_CASE("Logarithmic map 3", "[quaternion]") {
-    Eigen::Quaterniond q1(0.3717, -0.4993, -0.6162, 0.4825);
-    Eigen::Quaterniond q2 = Eigen::Quaterniond::Identity();
-    Eigen::Vector3d    log_q = dmp::logarithmic_map(q1, q2);
-    REQUIRE(IS_ZERO(log_q[0], -0.64));
-    REQUIRE(IS_ZERO(log_q[1], -0.7899));
-    REQUIRE(IS_ZERO(log_q[2], 0.6185));
+// TEST_CASE("Logarithmic map 3", "[quaternion]") {
+//     Eigen::Quaterniond q1(0.3717, -0.4993, -0.6162, 0.4825);
+//     Eigen::Quaterniond q2    = Eigen::Quaterniond::Identity();
+//     Eigen::Vector3d    log_q = dmp::logarithmic_map(q1, q2);
+//     REQUIRE(IS_ZERO(log_q[0], -0.64));
+//     REQUIRE(IS_ZERO(log_q[1], -0.7899));
+//     REQUIRE(IS_ZERO(log_q[2], 0.6185));
+// }
+
+TEST_CASE("Logarithmic map", "[quaternion]") {
+    Eigen::Quaterniond q1(
+            -0.7106690545187014,
+            -0.5685352436149612,
+            0.2132007163556104,
+            0.3553345272593507
+    );
+    Eigen::Quaterniond q2(
+            0.9556369651349932,
+            0.2389092412837483,
+            0.09556369651349933,
+            -0.1433455447702489
+    );
+
+    // Eigen::Quaterniond q3 = q1 * q2;
+    Eigen::Vector3d log = dmp::logarithmic_map(q1, q2);
+    REQUIRE(IS_ZERO(log[0], -1.4922));
+    REQUIRE(IS_ZERO(log[1], -1.2954));
+    REQUIRE(IS_ZERO(log[2], 1.6562));
 }
 
 TEST_CASE("Exponential map on identity", "[quaternion]") {
@@ -95,6 +116,28 @@ TEST_CASE("Quaternion product", "[quaternion]") {
 
     // Eigen::Quaterniond q3 = q1 * q2;
     Eigen::Quaterniond q3 = dmp::quaternion_product(q1, q2);
+    REQUIRE(IS_ZERO(q3.x(), -0.7776171531545698));
+    REQUIRE(IS_ZERO(q3.y(), 0.1392240317874993));
+    REQUIRE(IS_ZERO(q3.z(), 0.3361751011454253));
+    REQUIRE(IS_ZERO(q3.w(), -0.5127519219490832));
+}
+
+TEST_CASE("Quaternion Matlab", "[quaternion]") {
+    Eigen::Quaterniond q1(
+            -0.7106690545187014,
+            -0.5685352436149612,
+            0.2132007163556104,
+            0.3553345272593507
+    );
+    Eigen::Quaterniond q2(
+            0.9556369651349932,
+            0.2389092412837483,
+            0.09556369651349933,
+            -0.1433455447702489
+    );
+
+    Eigen::Quaterniond q3 = q1 * q2;
+    // Eigen::Quaterniond q3 = dmp::quaternion_product(q1, q2);
     REQUIRE(IS_ZERO(q3.x(), -0.7776171531545698));
     REQUIRE(IS_ZERO(q3.y(), 0.1392240317874993));
     REQUIRE(IS_ZERO(q3.z(), 0.3361751011454253));

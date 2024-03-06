@@ -16,13 +16,13 @@ DmpBase::DmpBase(
     _dt     = dt;
 }
 
-double DmpBase::getAlpha() const {return _alpha; }
+double DmpBase::getAlpha() const { return _alpha; }
 
-double DmpBase::getBeta() const {return _beta; }
+double DmpBase::getBeta() const { return _beta; }
 
-double DmpBase::getSamplingPeriod() const {return _dt; }
+double DmpBase::getSamplingPeriod() const { return _dt; }
 
-double DmpBase::getTau() const {return _tau; }
+double DmpBase::getTau() const { return _tau; }
 
 void DmpBase::setSamplingPeriod(const double& dt) { _dt = dt; };
 

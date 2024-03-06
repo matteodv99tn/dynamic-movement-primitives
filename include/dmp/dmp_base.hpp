@@ -16,10 +16,10 @@ namespace dmp {
         double getBeta() const;
         double getSamplingPeriod() const;
         double getTau() const;
-        void setSamplingPeriod(const double& dt);
-        void setTau(const double& tau);
+        void   setSamplingPeriod(const double& dt);
+        void   setTau(const double& tau);
 
-    // protected:
+        // protected:
         BasisFunction::SharedPtr _basis;
         double                   _alpha, _beta;
         double                   _lambda;

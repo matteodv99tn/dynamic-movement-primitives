@@ -77,11 +77,11 @@ namespace dmp {
         Eigen::MatrixXd              _w;
         Eigen::MatrixXd              _w_train;
         std::vector<Eigen::MatrixXd> _P;
-        Eigen::MatrixXd _fd_des;
-        Eigen::Vector3d _curr_log;
-        Eigen::MatrixXd _log;
+        Eigen::MatrixXd              _fd_des;
+        Eigen::Vector3d              _curr_log;
+        Eigen::MatrixXd              _log;
 
-        int idx = 0;
+        int             idx = 0;
         Eigen::MatrixXd _eta_hist;
         Eigen::MatrixXd _deta_dt_hist;
         Eigen::MatrixXd _q_hist;

@@ -8,14 +8,18 @@
 
 namespace dmp {
     namespace traindatacolumn {
-        constexpr std::size_t time    = 0;
-        constexpr std::size_t posx    = 1;
-        constexpr std::size_t posy    = 2;
-        constexpr std::size_t posz    = 3;
-        constexpr std::size_t quatx   = 4;
-        constexpr std::size_t quaty   = 5;
-        constexpr std::size_t quatz   = 6;
-        constexpr std::size_t quatw   = 7;
+        constexpr std::size_t time  = 0;
+        constexpr std::size_t posx  = 1;
+        constexpr std::size_t posy  = 2;
+        constexpr std::size_t posz  = 3;
+        constexpr std::size_t quatx = 4;
+        constexpr std::size_t quaty = 5;
+        constexpr std::size_t quatz = 6;
+        constexpr std::size_t quatw = 7;
+        // constexpr std::size_t quatw   = 4;
+        // constexpr std::size_t quatx   = 5;
+        // constexpr std::size_t quaty   = 6;
+        // constexpr std::size_t quatz   = 7;
         constexpr std::size_t velx    = 8;
         constexpr std::size_t vely    = 9;
         constexpr std::size_t velz    = 10;
@@ -34,8 +38,10 @@ namespace dmp {
     Eigen::MatrixXd loadTrainingTrajectory();
     Eigen::MatrixXd loadTrainingTrajectory(const std::string& file_path);
 
-    Eigen::VectorXd getTimeVector(const Eigen::MatrixXd& trajectory);
-    std::optional<Eigen::MatrixXd> getAxisTrajectory(const Eigen::MatrixXd& trajectory, const char axis);
+    Eigen::VectorXd                getTimeVector(const Eigen::MatrixXd& trajectory);
+    std::optional<Eigen::MatrixXd> getAxisTrajectory(
+            const Eigen::MatrixXd& trajectory, const char axis
+    );
 
     Eigen::MatrixXd getPositionTrajectory(const Eigen::MatrixXd& trajectory);
     Eigen::MatrixXd getVelocityTrajectory(const Eigen::MatrixXd& trajectory);

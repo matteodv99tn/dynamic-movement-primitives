@@ -7,7 +7,7 @@ using dmp::PeriodicGaussianKernel;
 PeriodicGaussianKernel::PeriodicGaussianKernel(const std::size_t& N) :
         dmp::BasisFunction(N) {
     _c = Eigen::VectorXd::LinSpaced(N, 0, 2 * M_PI - 2 * M_PI / N);
-    _h = Eigen::VectorXd::Ones(N) * 1.5 * _N;
+    _h = Eigen::VectorXd::Ones(N) * 2.5 * _N;
     return;
 }
 

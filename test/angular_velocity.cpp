@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "common/defines.hpp"
-#include "common/defines.hpp.in"
+#include "common/test_functions.hpp"
 #include "dmp/basis_function/periodic_gaussian_kernel.hpp"
 #include "dmp/quaternion_periodic_dmp.hpp"
 #include "dmp/quaternion_utils.hpp"
@@ -61,30 +61,34 @@ int main() {
     //     omega_original.row(i) = qrot * omega_original.row(i);
     // }
     Eigen::MatrixXd omega_original = dmp::getAngularVelocityTrajectory(trajectory);
-    Eigen::MatrixXd omega_rotated = dmp::rotate_angular_velocity(omega_original, q_traj);
+    Eigen::MatrixXd omega_rotated =
+            dmp::rotate_angular_velocity(omega_original, q_traj);
 
-    std::vector<double> omegadiff_x = dmp::test::toStdVector(omega_traj.col(0));
-    std::vector<double> omegadiff_y = dmp::test::toStdVector(omega_traj.col(1));
-    std::vector<double> omegadiff_z = dmp::test::toStdVector(omega_traj.col(2));
-    std::vector<double> omegaoriginal_x  = dmp::test::toStdVector(omega_original.col(0));
-    std::vector<double> omegaoriginal_y  = dmp::test::toStdVector(omega_original.col(1));
-    std::vector<double> omegaoriginal_z  = dmp::test::toStdVector(omega_original.col(2));
-    std::vector<double> omegajac_x  = dmp::test::toStdVector(omega_rotated.col(0));
-    std::vector<double> omegajac_y  = dmp::test::toStdVector(omega_rotated.col(1));
-    std::vector<double> omegajac_z  = dmp::test::toStdVector(omega_rotated.col(2));
+    std::vector<double> omegadiff_x     = dmp::test::toStdVector(omega_traj.col(0));
+    std::vector<double> omegadiff_y     = dmp::test::toStdVector(omega_traj.col(1));
+    std::vector<double> omegadiff_z     = dmp::test::toStdVector(omega_traj.col(2));
+    std::vector<double> omegaoriginal_x = dmp::test::toStdVector(omega_original.col(0));
+    std::vector<double> omegaoriginal_y = dmp::test::toStdVector(omega_original.col(1));
+    std::vector<double> omegaoriginal_z = dmp::test::toStdVector(omega_original.col(2));
+    std::vector<double> omegajac_x      = dmp::test::toStdVector(omega_rotated.col(0));
+    std::vector<double> omegajac_y      = dmp::test::toStdVector(omega_rotated.col(1));
+    std::vector<double> omegajac_z      = dmp::test::toStdVector(omega_rotated.col(2));
 
     gp_omega << "set title 'Angular velocity comparison\n";
     gp_omega << "set xlabel 'Time (ticks)'\n";
     gp_omega << "set ylabel 'Angular velocity'\n";
-    gp_omega << "plot '-' with lines title '{/Symbol w}_x diff' linecolor 1"
-                ", '-' with lines title '{/Symbol w}_x data' dashtype 2 linecolor 1"
-                ", '-' with lines title '{/Symbol w}_x original' dashtype 3 linecolor 1";
-    gp_omega << ", '-' with lines title '{/Symbol w}_y diff' linecolor 2"
-                ", '-' with lines title '{/Symbol w}_y data' dashtype 2 linecolor 2"
-                ", '-' with lines title '{/Symbol w}_y original' dashtype 3 linecolor 2";
-    gp_omega << ", '-' with lines title '{/Symbol w}_z diff' linecolor 3"
-                ", '-' with lines title '{/Symbol w}_z data' dashtype 2 linecolor 3"
-                ", '-' with lines title '{/Symbol w}_z original' dashtype 3 linecolor 3";
+    gp_omega
+            << "plot '-' with lines title '{/Symbol w}_x diff' linecolor 1"
+               ", '-' with lines title '{/Symbol w}_x data' dashtype 2 linecolor 1"
+               ", '-' with lines title '{/Symbol w}_x original' dashtype 3 linecolor 1";
+    gp_omega
+            << ", '-' with lines title '{/Symbol w}_y diff' linecolor 2"
+               ", '-' with lines title '{/Symbol w}_y data' dashtype 2 linecolor 2"
+               ", '-' with lines title '{/Symbol w}_y original' dashtype 3 linecolor 2";
+    gp_omega
+            << ", '-' with lines title '{/Symbol w}_z diff' linecolor 3"
+               ", '-' with lines title '{/Symbol w}_z data' dashtype 2 linecolor 3"
+               ", '-' with lines title '{/Symbol w}_z original' dashtype 3 linecolor 3";
     gp_omega << "\n";
 
     gp_omega.send1d(omegadiff_x);
