@@ -105,6 +105,7 @@ void QuaternionPeriodicDmp::setInitialConditions(
         const Eigen::Quaterniond& q0, const Eigen::Vector3d& omega0, const double& phi0
 ) {
     _q   = q0;
+    _q0  = q0;
     _eta = omega0 * _tau;
     _phi = phi0;
 }
@@ -173,5 +174,10 @@ void QuaternionPeriodicDmp::step() {
     }
 
     _phi += _Omega() * 2 * M_PI * _dt;
+    if (_phi > 2 * M_PI) {
+        _phi = 0;
+        _q   = _q0;
+        _eta = Eigen::Vector3d::Zero();
+    }
     idx++;
 }

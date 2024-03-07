@@ -89,7 +89,7 @@ namespace dmp {
         Eigen::MatrixXd _f_hist;
         Eigen::MatrixXd _log_hist;
 
-        Eigen::Quaterniond _q, _g;
+        Eigen::Quaterniond _q, _g, _q0;
         Eigen::Vector3d    _eta;
         Eigen::Vector3d    _deta_dt;
         double             _phi;
