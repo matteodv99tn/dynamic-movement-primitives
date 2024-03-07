@@ -174,7 +174,7 @@ void QuaternionPeriodicDmp::step() {
     }
 
     _phi += _Omega() * 2 * M_PI * _dt;
-    if (_phi > 2 * M_PI) {
+    if (_phi >= 2 * M_PI) {
         _phi = 0;
         _q   = _q0;
         _eta = Eigen::Vector3d::Zero();
