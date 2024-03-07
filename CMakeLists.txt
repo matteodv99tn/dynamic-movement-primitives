@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
-project(dmps)
+project(dmplib)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+
+set(DMPLIB_BUILD_TESTS OFF CACHE BOOL "Build tests")
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -14,19 +17,8 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/ericniebler/range-v3.git
     GIT_TAG 0.12.0
     )
-set(GnuPlotIostream_BuildTests OFF)
-set(GnuPlotIostream_BuildExamples OFF)
-FetchContent_Declare(
-    GnuPlot_iostream
-    GIT_REPOSITORY https://github.com/dstahlke/gnuplot-iostream.git
-    )
-FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v3.5.2
-    )
 
-FetchContent_MakeAvailable(range-v3 GnuPlot_iostream Catch2)
+FetchContent_MakeAvailable(range-v3)
 
 find_package(Eigen3 REQUIRED)
 
@@ -45,4 +37,6 @@ target_include_directories(dmp
     PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include
     )
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)
+if(DMPLIB_BUILD_TESTS)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)
+endif()
