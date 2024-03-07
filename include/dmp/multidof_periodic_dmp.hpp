@@ -3,7 +3,7 @@
 
 #include <cstddef>
 #include <Eigen/Dense>
-#include <Eigen/src/Core/Matrix.h>
+#include <memory>
 
 #include "dmp/basis_function/basis_function.hpp"
 #include "dmp/dmp_base.hpp"
@@ -12,6 +12,9 @@ namespace dmp {
 
     class MultiDofPeriodicDmp : public DmpBase {
     public:
+        using UniquePtr  = std::unique_ptr<MultiDofPeriodicDmp>;
+        using SharedPtr  = std::shared_ptr<MultiDofPeriodicDmp>;
+
         MultiDofPeriodicDmp(
                 const BasisFunction::SharedPtr& basis,
                 const std::size_t               n_dof,

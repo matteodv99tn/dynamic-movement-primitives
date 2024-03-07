@@ -12,6 +12,9 @@ namespace dmp {
 
     class QuaternionPeriodicDmp : public DmpBase {
     public:
+        using UniquePtr  = std::unique_ptr<QuaternionPeriodicDmp>;
+        using SharedPtr  = std::shared_ptr<QuaternionPeriodicDmp>;
+
         QuaternionPeriodicDmp(
                 const BasisFunction::SharedPtr& basis,
                 const double                    alpha  = 48.0,
