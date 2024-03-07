@@ -130,9 +130,17 @@ void dmp::test::batch_learning_test(
 
     Eigen::MatrixXd diff = q_traj - q_hist.block(0, 0, Ns, 4);
 
+    Eigen::MatrixXd pos_traj_repeated = Eigen::MatrixXd::Zero(t_sim, 3);
+    Eigen::MatrixXd q_traj_repeated = Eigen::MatrixXd::Zero(t_sim, 4);
+
+    for (int i = 0; i < N_reps; i++) {
+        pos_traj_repeated.block(i * Ns, 0, Ns, 3) = pos_traj;
+        q_traj_repeated.block(i * Ns, 0, Ns, 4) = q_traj;
+    }
+
     // Plot results
-    dmp::test::plot_quaternion_trajectory(q_hist, q_traj);
-    dmp::test::plot_position_trajectory(pos_hist, pos_traj);
+    dmp::test::plot_quaternion_trajectory(q_hist, q_traj_repeated);
+    dmp::test::plot_position_trajectory(pos_hist, pos_traj_repeated);
     // dmp::test::plot_angular_velocity(omega_hist, omega_traj);
     // dmp::test::plot_angular_acceleration(alpha_hist, alpha_traj);
     // dmp::test::plot_forcing_term(

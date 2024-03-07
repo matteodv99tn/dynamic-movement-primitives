@@ -3,7 +3,7 @@
 
 int main() {
     Eigen::MatrixXd data = dmp::test::load_file("robot.csv");
-    dmp::test::batch_learning_test(data, 48.0, 25, true, 1, dmp::test::LearningMethod::INCREMENTAL);
+    dmp::test::batch_learning_test(data, 48.0, 25, true, 4, dmp::test::LearningMethod::INCREMENTAL);
 
     return 0;
 }

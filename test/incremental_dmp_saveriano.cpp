@@ -3,6 +3,6 @@
 
 int main() {
     Eigen::MatrixXd data = dmp::test::load_file("saveriano.csv");
-    dmp::test::batch_learning_test(data, 48.0, 25, false, 5, dmp::test::LearningMethod::INCREMENTAL);
+    dmp::test::batch_learning_test(data, 48.0, 25, false, 4, dmp::test::LearningMethod::INCREMENTAL);
     return 0;
 }
