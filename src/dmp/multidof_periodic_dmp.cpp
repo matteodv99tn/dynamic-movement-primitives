@@ -51,13 +51,12 @@ void MultiDofPeriodicDmp::incrementalLearn(
         const Eigen::MatrixXd num = _P[i] * psi * psi.transpose() * _P[i];
         const double          den = _lambda + psi.transpose() * _P[i] * psi;
         _P[i]                     = 1 / _lambda * (_P[i] - num / den);
-        _w.col(i) += (fd(i) - psi.transpose() * _w.col(i)) * _P[i] * psi;
+        _w.col(i) += _xi * (fd(i) - psi.transpose() * _w.col(i)) * _P[i] * psi;
     }
 }
+
 void MultiDofPeriodicDmp::incrementalLearn(
-        const Eigen::VectorXd& y,
-        const Eigen::VectorXd& dy,
-        const Eigen::VectorXd& ddy
+        const Eigen::VectorXd& y, const Eigen::VectorXd& dy, const Eigen::VectorXd& ddy
 ) {
     incrementalLearn(_phi, y, dy, ddy);
 }

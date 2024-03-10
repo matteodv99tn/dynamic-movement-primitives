@@ -14,6 +14,7 @@ DmpBase::DmpBase(
     _lambda = lambda;
     _tau    = 1.0;
     _dt     = dt;
+    _xi     = 1.0;
 }
 
 double DmpBase::getAlpha() const { return _alpha; }
@@ -27,3 +28,5 @@ double DmpBase::getTau() const { return _tau; }
 void DmpBase::setSamplingPeriod(const double& dt) { _dt = dt; };
 
 void DmpBase::setTau(const double& tau) { _tau = tau; };
+
+void DmpBase::setLearningCoefficient(const double& lambda) { _xi = lambda; };

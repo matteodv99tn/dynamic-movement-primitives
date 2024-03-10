@@ -5,27 +5,29 @@
 
 namespace dmp {
 
-    class DmpBase {
-    public:
-        DmpBase(const BasisFunction::SharedPtr& basis,
-                const double                    alpha  = 48.0,
-                const double                    lambda = 0.999,
-                const double                    dt     = 0.002);
+class DmpBase {
+public:
+    DmpBase(const BasisFunction::SharedPtr& basis,
+            const double                    alpha  = 48.0,
+            const double                    lambda = 0.999,
+            const double                    dt     = 0.002);
 
-        double getAlpha() const;
-        double getBeta() const;
-        double getSamplingPeriod() const;
-        double getTau() const;
-        void   setSamplingPeriod(const double& dt);
-        void   setTau(const double& tau);
+    double getAlpha() const;
+    double getBeta() const;
+    double getSamplingPeriod() const;
+    double getTau() const;
+    void   setSamplingPeriod(const double& dt);
+    void   setTau(const double& tau);
+    void   setLearningCoefficient(const double& lambda);
 
-        // protected:
-        BasisFunction::SharedPtr _basis;
-        double                   _alpha, _beta;
-        double                   _lambda;
-        double                   _tau;
-        double                   _dt;
-    };
+    // protected:
+    BasisFunction::SharedPtr _basis;
+    double                   _alpha, _beta;
+    double                   _lambda;
+    double                   _tau;
+    double                   _dt;
+    double                   _xi;  // value that pre-multiplies the dmp update
+};
 
 }  // namespace dmp
 
