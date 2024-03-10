@@ -34,6 +34,12 @@ namespace dmp {
                 const Eigen::VectorXd& ddy
         );
 
+        void incrementalLearn(
+                const Eigen::VectorXd& y,
+                const Eigen::VectorXd& dy,
+                const Eigen::VectorXd& ddy
+        );
+
         void batchLearn(
                 const Eigen::VectorXd& phi,
                 const Eigen::MatrixXd& y,

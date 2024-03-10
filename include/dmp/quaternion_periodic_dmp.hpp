@@ -62,6 +62,12 @@ namespace dmp {
                 const Eigen::Vector3d&    domega_dt
         );
 
+        void incrementalLearn(
+                const Eigen::Quaterniond& q,
+                const Eigen::Vector3d&    omega,
+                const Eigen::Vector3d&    domega_dt
+        );
+
         void batchLearn(
                 const Eigen::VectorXd& phi,
                 const Eigen::MatrixXd& q,

@@ -129,6 +129,14 @@ void QuaternionPeriodicDmp::incrementalLearn(
     _w_train = _w;
 }
 
+void QuaternionPeriodicDmp::incrementalLearn(
+        const Eigen::Quaterniond& q,
+        const Eigen::Vector3d&    omega,
+        const Eigen::Vector3d&    domega_dt
+) {
+    return incrementalLearn(_phi, q, omega, domega_dt);
+}
+
 void QuaternionPeriodicDmp::batchLearn(
         const Eigen::VectorXd& phi,
         const Eigen::MatrixXd& y,

@@ -54,6 +54,13 @@ void MultiDofPeriodicDmp::incrementalLearn(
         _w.col(i) += (fd(i) - psi.transpose() * _w.col(i)) * _P[i] * psi;
     }
 }
+void MultiDofPeriodicDmp::incrementalLearn(
+        const Eigen::VectorXd& y,
+        const Eigen::VectorXd& dy,
+        const Eigen::VectorXd& ddy
+) {
+    incrementalLearn(_phi, y, dy, ddy);
+}
 
 void MultiDofPeriodicDmp::batchLearn(
         const Eigen::VectorXd& phi,
