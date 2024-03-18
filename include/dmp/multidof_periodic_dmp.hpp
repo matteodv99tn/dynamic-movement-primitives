@@ -80,11 +80,12 @@ namespace dmp {
 
         Eigen::MatrixXd getLearnedForcingFunction(const Eigen::VectorXd& phi) const;
 
-    private:
+    public:
         std::size_t _n_dof;
 
         // Weights for the basis function
         Eigen::VectorXd              _r;
+        Eigen::VectorXd              _g;
         Eigen::MatrixXd              _w;
         std::vector<Eigen::MatrixXd> _P;
 

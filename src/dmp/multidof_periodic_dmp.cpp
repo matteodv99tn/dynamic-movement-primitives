@@ -20,6 +20,7 @@ MultiDofPeriodicDmp::MultiDofPeriodicDmp(
     _y     = Eigen::VectorXd::Zero(n_dof);
     _z     = Eigen::VectorXd::Zero(n_dof);
     _dz_dt = Eigen::VectorXd::Zero(_n_dof);
+    _g     = Eigen::VectorXd::Zero(_n_dof);
     _phi   = 0.0;
     resetWeights();
 }
@@ -92,7 +93,7 @@ void MultiDofPeriodicDmp::setInitialConditions(
 
 void MultiDofPeriodicDmp::step() {
     static std::size_t i = 0;
-    _dz_dt = _Omega() * (_alpha * (-_beta * _y - _z) + (*_basis)(_phi, _w));
+    _dz_dt = _Omega() * (_alpha * (-_beta * (_y - _g) - _z) + (*_basis)(_phi, _w));
     _z += _dz_dt * _dt;
     _y += _Omega() * _z * _dt;
     _phi += _Omega() * _dt;
@@ -117,13 +118,13 @@ Eigen::VectorXd MultiDofPeriodicDmp::getAccelerationState() const {
 Eigen::VectorXd MultiDofPeriodicDmp::evaluateDesiredForce(
         const Eigen::VectorXd& y, const Eigen::VectorXd& dy, const Eigen::VectorXd& ddy
 ) const {
-    return ddy * std::pow(_tau, 2) - _alpha * (-_beta * y - dy * _tau);
+    return ddy * std::pow(_tau, 2) - _alpha * (-_beta * (y - _g) - dy * _tau);
 }
 
 Eigen::MatrixXd MultiDofPeriodicDmp::evaluateDesiredForce(
         const Eigen::MatrixXd& y, const Eigen::MatrixXd& dy, const Eigen::MatrixXd& ddy
 ) const {
-    return ddy * std::pow(_tau, 2) - _alpha * (-_beta * y - dy * _tau);
+    return ddy * std::pow(_tau, 2) - _alpha * (-_beta * (y - _g) - dy * _tau);
 }
 
 Eigen::MatrixXd MultiDofPeriodicDmp::getLearnedForcingFunction(

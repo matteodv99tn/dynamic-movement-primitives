@@ -88,6 +88,7 @@ namespace dmp {
         std::vector<Eigen::MatrixXd> _P;
         Eigen::MatrixXd              _fd_des;
         Eigen::Vector3d              _curr_log;
+        Eigen::Vector3d              _last_f;
         Eigen::MatrixXd              _log;
 
         int             idx = 0;

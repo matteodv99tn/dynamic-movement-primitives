@@ -17,8 +17,9 @@ QuaternionPeriodicDmp::QuaternionPeriodicDmp(
         const double                    dt
 ) :
         DmpBase::DmpBase(basis, alpha, lambda, dt) {
-    _q = Eigen::Quaterniond::Identity();
-    _g = Eigen::Quaterniond::Identity();
+    _q  = Eigen::Quaterniond::Identity();
+    _q0 = Eigen::Quaterniond::Identity();
+    _g  = Eigen::Quaterniond::Identity();
 
     _eta     = Eigen::VectorXd::Zero(3);
     _deta_dt = Eigen::VectorXd::Zero(3);
@@ -166,6 +167,7 @@ void QuaternionPeriodicDmp::step() {
     Eigen::Vector3d f   = (*_basis)(_phi, _w);
     _deta_dt            = _Omega() * (_alpha * (2 * _beta * log - _eta) + f);
     _eta += _deta_dt * _dt;
+    _last_f = f;
 
     _q = dmp::exponential_map(0.5 * _dt * _Omega() * _eta, _q);
 
@@ -182,10 +184,10 @@ void QuaternionPeriodicDmp::step() {
     }
 
     _phi += _Omega() * 2 * M_PI * _dt;
-    if (_phi >= 2 * M_PI) {
-        _phi = 0;
-        _q   = _q0;
-        _eta = Eigen::Vector3d::Zero();
-    }
+    // if (_phi >= 2 * M_PI) {
+    //     _phi = 0;
+    //     _q   = _q0;
+    //     _eta = Eigen::Vector3d::Zero();
+    // }
     idx++;
 }
