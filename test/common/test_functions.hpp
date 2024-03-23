@@ -20,7 +20,8 @@ namespace dmp::test {
             const std::size_t      N_basis,
             bool                   rotate_omega,
             const std::size_t      N_reps,
-            const LearningMethod    method = LearningMethod::BATCH
+            const LearningMethod   method = LearningMethod::BATCH,
+            const double           lambda = 0.999
     );
 
     void plot_quaternion_trajectory(

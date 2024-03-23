@@ -14,12 +14,13 @@ Eigen::MatrixXd dmp::test::load_file(const std::string& file_name) {
 }
 
 void dmp::test::batch_learning_test(
-        const Eigen::MatrixXd& data,
-        const double           alpha,
-        const std::size_t      N_basis,
-        bool                   rotate_omega,
-        const std::size_t      N_reps,
-        const dmp::test::LearningMethod    method
+        const Eigen::MatrixXd&          data,
+        const double                    alpha,
+        const std::size_t               N_basis,
+        bool                            rotate_omega,
+        const std::size_t               N_reps,
+        const dmp::test::LearningMethod method,
+        const double                    lambda
 ) {
     // Extract data
     Eigen::VectorXd time                = dmp::getTimeVector(data);
@@ -51,10 +52,9 @@ void dmp::test::batch_learning_test(
 
     std::string sep = "=============";
     std::cout << sep << " Test Settings " << sep << "\n";
-    if(method == dmp::test::LearningMethod::BATCH)
+    if (method == dmp::test::LearningMethod::BATCH)
         std::cout << "Learning method:       batch\n";
-    else
-        std::cout << "Learning method:       incremental\n";
+    else std::cout << "Learning method:       incremental\n";
     std::cout << "Alpha:                 " << alpha << "\n";
     std::cout << "Num. of basis:         " << N_basis << "\n";
     std::cout << "Sampling period:       " << dt << "\n";
@@ -66,8 +66,9 @@ void dmp::test::batch_learning_test(
 
     // Create DMP
     auto basis = std::make_shared<dmp::PeriodicGaussianKernel>(N_basis);
-    dmp::MultiDofPeriodicDmp   dmp_position(basis, 3, alpha);
-    dmp::QuaternionPeriodicDmp dmp_orientation(basis, alpha);
+    dmp::MultiDofPeriodicDmp   dmp_position(basis, 3, alpha, lambda);
+    dmp::QuaternionPeriodicDmp dmp_orientation(basis, alpha, lambda);
+    std::cout << "Forgetting factor:     " << dmp_position._lambda << "\n";
 
     // Set properties
     dmp_position.setInitialConditions(pos_traj.row(0), vel_traj.row(0));
@@ -95,7 +96,7 @@ void dmp::test::batch_learning_test(
     Eigen::Quaterniond q;
 
     // Perform batch learning
-    Eigen::VectorXd phi_position = dmp_position.timeToPhase(time);
+    Eigen::VectorXd phi_position    = dmp_position.timeToPhase(time);
     Eigen::VectorXd phi_orientation = dmp_orientation.timeToPhase(time);
     if (method == dmp::test::LearningMethod::BATCH) {
         dmp_position.batchLearn(phi_position, pos_traj, vel_traj, acc_traj);
@@ -104,7 +105,6 @@ void dmp::test::batch_learning_test(
 
     // Integrate the system
     for (int i = 0; i < t_sim; i++) {
-
         // Store states
         pos_hist.row(i) = dmp_position.getPositionState();
         vel_hist.row(i) = dmp_position.getVelocityState();
@@ -119,8 +119,12 @@ void dmp::test::batch_learning_test(
         // Incremental learn
         if ((method == dmp::test::LearningMethod::INCREMENTAL) && (i < Ns)) {
             Eigen::Quaterniond q_tmp(Eigen::Vector4d(q_traj.row(i)));
-            dmp_position.incrementalLearn(phi_position(i), pos_traj.row(i), vel_traj.row(i), acc_traj.row(i));
-            dmp_orientation.incrementalLearn(phi_orientation(i), q_tmp, omega_traj.row(i), alpha_traj.row(i));
+            dmp_position.incrementalLearn(
+                    phi_position(i), pos_traj.row(i), vel_traj.row(i), acc_traj.row(i)
+            );
+            dmp_orientation.incrementalLearn(
+                    phi_orientation(i), q_tmp, omega_traj.row(i), alpha_traj.row(i)
+            );
         }
 
         // Step integration
@@ -131,11 +135,11 @@ void dmp::test::batch_learning_test(
     Eigen::MatrixXd diff = q_traj - q_hist.block(0, 0, Ns, 4);
 
     Eigen::MatrixXd pos_traj_repeated = Eigen::MatrixXd::Zero(t_sim, 3);
-    Eigen::MatrixXd q_traj_repeated = Eigen::MatrixXd::Zero(t_sim, 4);
+    Eigen::MatrixXd q_traj_repeated   = Eigen::MatrixXd::Zero(t_sim, 4);
 
     for (int i = 0; i < N_reps; i++) {
         pos_traj_repeated.block(i * Ns, 0, Ns, 3) = pos_traj;
-        q_traj_repeated.block(i * Ns, 0, Ns, 4) = q_traj;
+        q_traj_repeated.block(i * Ns, 0, Ns, 4)   = q_traj;
     }
 
     // Plot results

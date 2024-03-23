@@ -121,11 +121,18 @@ void QuaternionPeriodicDmp::incrementalLearn(
     const Eigen::VectorXd fd    = evaluateDesiredForce(q, omega, domega_dt);
 
     for (std::size_t i = 0; i < 3; ++i) {
-        const Eigen::VectorXd psi = basis;
-        const Eigen::MatrixXd num = _P[i] * psi * psi.transpose() * _P[i];
-        const double          den = _lambda + psi.transpose() * _P[i] * psi;
-        _P[i]                     = 1 / _lambda * (_P[i] - num / den);
-        _w.col(i) += _xi * (fd(i) - psi.transpose() * _w.col(i)) * _P[i] * psi;
+        for (std::size_t j = 0; j < _N(); ++j) {
+            double w = _w(j, i);
+            double e = fd(i) - w;
+            double psi = basis(j);
+            double P = _P[i](j, j);
+            double num = P*P;
+            double den = _lambda/psi + P;
+            double P_next  = 1/_lambda * (P - num/den);
+            _P[i](j, j) = P_next;
+            _w(j, i) += _xi * P * psi * e;
+
+        }
     }
     _w_train = _w;
 }
