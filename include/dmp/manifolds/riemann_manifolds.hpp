@@ -2,101 +2,83 @@
 #define DMP_RIEMANN_MANIFOLDS_HPP__
 
 #include <Eigen/Dense>
+#include <type_traits>
+
+#include "dmp/manifolds/traits.hpp"
 
 namespace dmp {
 
-    template<typename T>
-    struct has_logarithmic_map_impl {
-    private:
-        template<typename C>
-        static constexpr auto test(int) -> decltype(&C::logarithmic_map_impl, std::true_type{});
-        template<typename C>
-        static constexpr std::false_type test(...);
+/**
+ * @brief Riemann Manifold base class for CRTP
+ *
+ * This class provides some common definition to easen the development of the DMP later
+ * on. The CRTP pattern expects as first input the Derived manifold itself, the object
+ * type used to encode the manifold, and the dimension of the tangent subspace.
+ *
+ * @tparam Derived Child manifold for CRTP
+ * @tparam Domain Type of the domain obj. used for computation
+ * @tparam SUBSPACE_DIM Dimension of the embedding space
+ */
+template <typename Derived, typename Domain, int SUBSPACE_DIM>
+class RiemannManifold {
+public:
+    using Domain_t                    = Domain;
+    using Tangent_t                   = Eigen::Matrix<double, SUBSPACE_DIM, 1>;
+    static constexpr int subspace_dim = SUBSPACE_DIM;
 
-    public:
-        static constexpr bool value = decltype(test<T>(0))::value;
-    };
+    static inline Tangent_t
+    construct_tangent() {
+        return Tangent_t::Zero();
+    }
 
+    static inline Domain_t
+    construct_domain() {
+        static_assert(
+                dmp::has_custom_constructor_v<Derived> ||
+                        std::is_default_constructible<Domain_t>::value,
+                "The Domain of the manifold is not default constructible, and the "
+                "implementation did not provide a valid constructor"
+        );
 
-    template<typename T>
-    struct has_exponential_map_impl {
-    private:
-        template<typename C>
-        static constexpr auto test(int) -> decltype(&C::exponential_map_impl, std::true_type{});
-        template<typename C>
-        static constexpr std::false_type test(...);
+        if constexpr (dmp::has_custom_constructor_v<Derived>)
+            return Derived::construct_domain_impl();
 
-    public:
-        static constexpr bool value = decltype(test<T>(0))::value;
-    };
-    
+        if constexpr (std::is_default_constructible<Domain_t>::value) return Domain_t();
+    }
 
-    template<typename T>
-    struct has_domain_constructor_impl {
-    private:
-        template<typename C>
-        static constexpr auto test(int) -> decltype(&C::construct_domain_impl, std::true_type{});
-        template<typename C>
-        static constexpr std::false_type test(...);
+    /**
+     * @brief Logarithmic map operation
+     *
+     * Computes the tangent vector of the point x on the given manifold, with tangent
+     * space computed on the point p.
+     *
+     * @param[input] p point w.r.t. which the tangent space is referred
+     * @param[input] x point that's projected in the tangent space
+     * @return the tangent vector of the operation
+     */
+    Tangent_t
+    logarithmic_map(const Domain_t& p, const Domain_t& x) const {
+        return static_cast<const Derived* const>(this)->logarithmic_map_impl(p, x);
+    }
 
-    public:
-        static constexpr bool value = decltype(test<T>(0))::value;
-    };
+    /**
+     * @brief Exponential map operation
+     *
+     * Returns the point in the domain that is obtained, starting from the point p on
+     * the manifold, by integrating by a vector v on the tangent space computed in such
+     * point. Optionally, the vector can be rescaled by a sampling period dt.
+     *
+     * @param[input] p point on the manifold w.r.t. which the tangent space is defined
+     * and integration is performed
+     * @param[input] v integration vector
+     * @param[input] dt scaling term of the vector v, defaults to 1
+     * @return the point after integration
+     */
+    Domain_t
+    exponential_map(const Domain_t& p, const Tangent_t& v, const double& dt = 1) const {
+        return static_cast<const Derived* const>(this)->exponential_map_impl(p, v * dt);
+    }
+};
+}  // namespace dmp
 
-
-    template <typename Derived, typename Domain, int SUBSPACE_DIM>
-    class RiemannianManifold {
-    public:
-        using Domain_t = Domain;
-        using Tangent_t = Eigen::Matrix<double, SUBSPACE_DIM, 1>;
-        static constexpr int subspace_dim = SUBSPACE_DIM;
-
-
-        Tangent_t construct_tangent() const {
-            return Tangent_t::Zero();
-        }
-
-        Domain_t construct_domain() const {
-            return static_cast<const Derived* const>(this)->construct_domain_impl();
-        }
-
-        /**
-         * @brief Logarithmic map
-         * 
-         * Computes the logarithmic map of the manifold on the tangent space at the point x
-         * of the point y.
-         */
-        Tangent_t logarithmic_map(const Domain_t& x, const Domain_t& y) const {
-            return static_cast<const Derived* const>(this)->logarithmic_map_impl(x, y);
-        }
-
-
-        /**
-         * @brief Exponential map
-         * 
-         * Computes the exponential mapping of the manifold at the point x of the tangent
-         * vector y.
-         */
-        Domain_t exponential_map(const Domain_t& x, const Tangent_t& y) const {
-            return static_cast<const Derived* const>(this)->exponential_map_impl(x, y);
-        }
-        
-        RiemannianManifold() {
-            
-            // Check that the derived class implements the domain constructor
-            static_assert(has_domain_constructor_impl<Derived>::value, "Derived class must implement Domain_t Derived::construct_domain_impl() const");
-
-            // Check that the derived class implements the logarithmic map
-            static_assert(has_logarithmic_map_impl<Derived>::value, "Derived class must implement Tangent_t Derived::logarithmic_map_impl(const Domain_t&, const Domain_t&) const");
-            static_assert(std::is_invocable_r_v<Tangent_t, decltype(&Derived::logarithmic_map_impl), const Derived*, const Domain_t&, const Domain_t&>,
-                          "Derived class must implement Tangent_t Derived::logarithmic_map_impl(const Domain_t&, const Domain_t&) const");
-            
-            // Check that the derived class implements the exponential map
-            static_assert(has_exponential_map_impl<Derived>::value, "Derived class must implement Domain_t Derived::exponential_map_impl(const Domain_t&, const Tangent_t&) const");
-            static_assert(std::is_invocable_r_v<Domain_t, decltype(&Derived::exponential_map_impl), const Derived*, const Domain_t&, const Tangent_t&>,
-                          "Derived class must implement Domain_t Derived::exponential_map_impl(const Domain_t&, const Tangent_t&) const");
-        }
-    };
-}
-
-#endif // DMP_RIEMANN_MANIFOLDS_HPP__
+#endif  // DMP_RIEMANN_MANIFOLDS_HPP__

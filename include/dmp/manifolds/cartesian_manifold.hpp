@@ -3,12 +3,11 @@
 
 #include "dmp/manifolds/rn_manifold.hpp"
 
-namespace dmp{
+namespace dmp {
 
-    // Manifold of a Cartesian space
-    class CartesianManifold : public RnManifold<3> {
-    };
+// Manifold of a Cartesian space
+class CartesianManifold : public RnManifold<3> {};
 
-}
+}  // namespace dmp
 
-#endif // DMP_CARTESIAN_MANIFOLD_HPP__
+#endif  // DMP_CARTESIAN_MANIFOLD_HPP__
