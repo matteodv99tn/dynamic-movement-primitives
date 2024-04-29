@@ -22,7 +22,7 @@ SE3Manifold::logarithmic_map_impl(const SE3& p, const SE3& x) const {
 SE3
 SE3Manifold::exponential_map_impl(const SE3& p, const Vec6& v) const {
     return SE3(
-        r3_manifold.exponential_map(p.p, v.head<3>()),
-        s3_manifold.exponential_map(p.q, v.tail<3>())
+            r3_manifold.exponential_map(p.p, v.head<3>()),
+            s3_manifold.exponential_map(p.q, v.tail<3>())
     );
 }

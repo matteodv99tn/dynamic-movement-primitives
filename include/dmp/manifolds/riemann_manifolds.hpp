@@ -58,7 +58,7 @@ public:
      */
     Tangent_t
     logarithmic_map(const Domain_t& p, const Domain_t& x) const {
-        return static_cast<const Derived* const>(this)->logarithmic_map_impl(p, x);
+        return static_cast<const Derived*>(this)->logarithmic_map_impl(p, x);
     }
 
     /**
@@ -76,7 +76,7 @@ public:
      */
     Domain_t
     exponential_map(const Domain_t& p, const Tangent_t& v, const double& dt = 1) const {
-        return static_cast<const Derived* const>(this)->exponential_map_impl(p, v * dt);
+        return static_cast<const Derived*>(this)->exponential_map_impl(p, v * dt);
     }
 };
 }  // namespace dmp

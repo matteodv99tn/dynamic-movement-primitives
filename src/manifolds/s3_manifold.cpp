@@ -2,13 +2,15 @@
 
 #include <Eigen/Geometry>
 
+
 using dmp::S3Manifold;
 using Eigen::Quaterniond;  // domain
 using Vec3 = S3Manifold::Tangent_t;
 
+
 Vec3
 S3Manifold::logarithmic_map_single(Quaterniond q) const {
-    if (q.w() < 0) { q.coeffs() = -q.coeffs(); }
+    if (q.w() < 0) q.coeffs() = -q.coeffs();
     const Eigen::Vector3d u  = q.vec();
     const double          nu = q.w();
 

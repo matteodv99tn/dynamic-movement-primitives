@@ -26,6 +26,9 @@ find_package(Eigen3 REQUIRED)
 add_library(dmp STATIC
     src/manifolds/s3_manifold.cpp
     src/manifolds/se3_manifold.cpp
+    src/data_container/timeseries.cpp
+    src/class_traits/integrable.cpp
+    src/manifold_traits/s3_manifold.cpp
     )
 target_link_libraries(dmp PUBLIC Eigen3::Eigen range-v3)
 target_include_directories(dmp
