@@ -3,7 +3,7 @@
 
 #include <Eigen/Dense>
 
-#include "dmp/data_handler/data_serialiser.hpp"
+#include "dmplib/data_handler/data_serialiser.hpp"
 #include "range/v3/all.hpp"
 
 // Declarations of traits that requires templates!

@@ -3,7 +3,7 @@
 
 #include <Eigen/Geometry>
 
-#include "dmp/manifolds/riemann_manifolds.hpp"
+#include "dmplib/manifolds/riemann_manifolds.hpp"
 
 namespace dmp {
 
@@ -12,8 +12,8 @@ class S3Manifold : public RiemannManifold<S3Manifold, Eigen::Quaterniond, 3> {
 public:
     // By default, initialise all quaternions to the identity quaternion, i.e.
     // nu = 1, u = [0 0 0]
-    static inline Eigen::Quaterniond
-    construct_domain_impl() {
+    inline Eigen::Quaterniond
+    construct_domain_impl() const {
         return Eigen::Quaterniond::Identity();
     }
 

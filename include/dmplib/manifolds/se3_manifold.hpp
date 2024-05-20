@@ -4,9 +4,9 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-#include "dmp/manifolds/riemann_manifolds.hpp"
-#include "dmp/manifolds/rn_manifold.hpp"
-#include "dmp/manifolds/s3_manifold.hpp"
+#include "dmplib/manifolds/riemann_manifolds.hpp"
+#include "dmplib/manifolds/rn_manifold.hpp"
+#include "dmplib/manifolds/s3_manifold.hpp"
 
 namespace dmp {
 
@@ -34,8 +34,8 @@ class SE3Manifold : public RiemannManifold<SE3Manifold, SE3, 6> {
 public:
     // By default, initialise all quaternions to the identity quaternion, i.e.
     // nu = 1, u = [0 0 0]
-    static inline Eigen::Quaterniond
-    construct_domain_impl() {
+    inline Eigen::Quaterniond
+    construct_domain_impl() const {
         return Eigen::Quaterniond::Identity();
     }
 
@@ -49,8 +49,8 @@ protected:
     SE3 exponential_map_impl(const SE3& application_point, const Tangent_t& v) const;
 
 private:
-    R3Manifold r3_manifold;  // sub-manifold for position computations
-    S3Manifold s3_manifold;  // sub-manifold for orientations computations
+    R3Manifold _r3_manifold;  // sub-manifold for position computations
+    S3Manifold _s3_manifold;  // sub-manifold for orientations computations
 };
 
 }  // namespace dmp

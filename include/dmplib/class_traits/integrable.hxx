@@ -3,7 +3,7 @@
 
 #include <chrono>
 
-#include "dmp/class_traits/integrable.hpp"
+#include "dmplib/class_traits/integrable.hpp"
 
 namespace dmp {
 Integrable::Integrable() { _dt = 0.001; }

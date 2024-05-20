@@ -4,9 +4,9 @@
 #include <cstddef>
 #include <type_traits>
 
-#include "dmp/class_traits/integrable.hpp"
-#include "dmp/data_handler/data_serialiser.hpp"
-#include "dmp/data_handler/timeseries.hpp"
+#include "dmplib/class_traits/integrable.hpp"
+#include "dmplib/data_handler/data_serialiser.hpp"
+#include "dmplib/data_handler/timeseries.hpp"
 #include "range/v3/all.hpp"
 
 

@@ -2,9 +2,11 @@
 #define DMP_RIEMANN_MANIFOLDS_HPP__
 
 #include <Eigen/Dense>
+#include <tuple>
 #include <type_traits>
+#include <vector>
 
-#include "dmp/manifolds/traits.hpp"
+#include "dmplib/manifolds/traits.hpp"
 
 namespace dmp {
 
@@ -19,29 +21,37 @@ namespace dmp {
  * @tparam Domain Type of the domain obj. used for computation
  * @tparam SUBSPACE_DIM Dimension of the embedding space
  */
-template <typename Derived, typename Domain, int SUBSPACE_DIM>
+template <typename Derived, typename Domain, std::size_t SUBSPACE_DIM>
 class RiemannManifold {
 public:
-    using Domain_t                    = Domain;
-    using Tangent_t                   = Eigen::Matrix<double, SUBSPACE_DIM, 1>;
-    static constexpr int subspace_dim = SUBSPACE_DIM;
+    static constexpr std::size_t subspace_dim = SUBSPACE_DIM;
 
-    static inline Tangent_t
-    construct_tangent() {
+    using Domain_t  = Domain;
+    using Tangent_t = Eigen::Matrix<double, SUBSPACE_DIM, 1>;
+
+    using PosSample           = Domain_t;
+    using PosVelSample        = std::tuple<Domain_t, Tangent_t>;
+    using PosVelAccSample     = std::tuple<Domain_t, Tangent_t, Tangent_t>;
+    using PosTrajectory       = std::vector<PosSample>;
+    using PosVelTrajectory    = std::vector<PosVelSample>;
+    using PosVelAccTrajectory = std::vector<PosVelAccSample>;
+
+    inline Tangent_t
+    construct_tangent() const {
         return Tangent_t::Zero();
     }
 
-    static inline Domain_t
-    construct_domain() {
+    inline Domain_t
+    construct_domain() const {
         static_assert(
-                dmp::has_custom_constructor_v<Derived> ||
-                        std::is_default_constructible<Domain_t>::value,
+                dmp::has_custom_constructor_v<Derived>
+                        || std::is_default_constructible<Domain_t>::value,
                 "The Domain of the manifold is not default constructible, and the "
                 "implementation did not provide a valid constructor"
         );
 
         if constexpr (dmp::has_custom_constructor_v<Derived>)
-            return Derived::construct_domain_impl();
+            return static_cast<const Derived*>(this)->construct_domain_impl();
 
         if constexpr (std::is_default_constructible<Domain_t>::value) return Domain_t();
     }

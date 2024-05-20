@@ -3,8 +3,8 @@
 
 #include <memory>
 
-#include "dmp/data_handler/timeseries.hpp"
-#include "dmp/systems/first_order_system.hpp"
+#include "dmplib/data_handler/timeseries.hpp"
+#include "dmplib/systems/first_order_system.hpp"
 
 namespace dmp {
 

@@ -25,7 +25,7 @@ public:
 
 }  // namespace dmp
 
-#include "dmp/data_handler/data_serialiser.hxx"
+#include "dmplib/data_handler/data_serialiser.hxx"
 
 
 #endif  // DMPLIB_DATA_SERIALISER_HPP__

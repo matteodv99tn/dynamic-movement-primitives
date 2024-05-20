@@ -4,8 +4,8 @@
 #include <Eigen/Core>
 #include <memory>
 
-#include "dmp/class_traits/integrable.hpp"
-#include "dmp/data_handler/timeseries.hpp"
+#include "dmplib/class_traits/integrable.hpp"
+#include "dmplib/data_handler/timeseries.hpp"
 
 namespace dmp {
 template <typename Manifold>
@@ -45,6 +45,6 @@ private:
 };
 }  // namespace dmp
 
-#include "dmp/systems/first_order_system.hxx"
+#include "dmplib/systems/first_order_system.hxx"
 
 #endif  // DMPLIB_FIRST_ORDER_SYSTEM_HPP__

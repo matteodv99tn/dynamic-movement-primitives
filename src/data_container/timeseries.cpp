@@ -1,4 +1,4 @@
 #include <cstddef>
 #include <Eigen/Dense>
 
-#include "dmp/data_handler/timeseries.hpp"
+#include "dmplib/data_handler/timeseries.hpp"

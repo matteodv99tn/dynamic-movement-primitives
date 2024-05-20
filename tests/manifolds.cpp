@@ -1,14 +1,13 @@
 #include <iostream>
 
-#include "dmp/class_traits/integrable.hpp"
-#include "dmp/data_handler/data_serialiser.hpp"
-#include "dmp/data_handler/timeseries.hpp"
-#include "dmp/manifolds/dummy_manifold.hpp"
-#include "dmp/manifolds/rn_manifold.hpp"
-#include "dmp/manifolds/s3_manifold.hpp"
-#include "dmp/manifolds/se3_manifold.hpp"
-#include "dmp/systems/first_order_system.hpp"
-#include "dmp/systems/second_order_system.hpp"
+#include "dmplib/class_traits/integrable.hpp"
+#include "dmplib/data_handler/data_serialiser.hpp"
+#include "dmplib/data_handler/timeseries.hpp"
+#include "dmplib/manifolds/rn_manifold.hpp"
+#include "dmplib/manifolds/s3_manifold.hpp"
+#include "dmplib/manifolds/se3_manifold.hpp"
+#include "dmplib/systems/first_order_system.hpp"
+#include "dmplib/systems/second_order_system.hpp"
 
 int
 main() {

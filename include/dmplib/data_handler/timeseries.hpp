@@ -5,8 +5,8 @@
 #include <Eigen/Dense>
 #include <vector>
 
-#include "dmp/class_traits/integrable.hpp"
-#include "dmp/data_handler/data_serialiser.hpp"
+#include "dmplib/class_traits/integrable.hpp"
+#include "dmplib/data_handler/data_serialiser.hpp"
 
 namespace dmp {
 
@@ -41,6 +41,6 @@ public:
 
 }  // namespace dmp
 
-#include "dmp/data_handler/timeseries.hxx"
+#include "dmplib/data_handler/timeseries.hxx"
 
 #endif  // DMPLIB_DATA_CONTAINER_HPP__

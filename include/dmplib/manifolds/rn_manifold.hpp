@@ -1,7 +1,7 @@
 #ifndef DMP_RN_MANIFOLD_HPP__
 #define DMP_RN_MANIFOLD_HPP__
 
-#include "dmp/manifolds/riemann_manifolds.hpp"
+#include "dmplib/manifolds/riemann_manifolds.hpp"
 
 namespace dmp {
 

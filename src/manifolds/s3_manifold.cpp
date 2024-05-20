@@ -1,4 +1,4 @@
-#include "dmp/manifolds/s3_manifold.hpp"
+#include "dmplib/manifolds/s3_manifold.hpp"
 
 #include <Eigen/Geometry>
 
