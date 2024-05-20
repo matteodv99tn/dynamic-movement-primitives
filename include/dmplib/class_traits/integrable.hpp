@@ -3,6 +3,8 @@
 
 #include <chrono>
 
+#include "dmplib/utils/macros.hpp"
+
 namespace dmp {
 class Integrable {
 protected:
@@ -13,12 +15,10 @@ public:
 
     Integrable(const double dt);
 
-    void set_integration_period(double dt);
+    GET_SET(_dt, integration_period);
 
     template <typename Rep, typename Period>
     void set_integration_period(const std::chrono::duration<Rep, Period>& dt);
-
-    double get_integration_period() const;
 
     void set_integration_frequency(const double& freq_hz);
 };
@@ -28,7 +28,7 @@ void
 Integrable::set_integration_period(const std::chrono::duration<Rep, Period>& dt) {
     using std::chrono::duration_cast;
     using std::chrono::nanoseconds;
-    this->_dt = duration_cast<nanoseconds>(dt).count() * 1e-9;
+    set_integration_period(duration_cast<nanoseconds>(dt).count() * 1e-9);
 }
 
 }  // namespace dmp
