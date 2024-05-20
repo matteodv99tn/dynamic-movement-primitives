@@ -34,9 +34,10 @@ class SE3Manifold : public RiemannManifold<SE3Manifold, SE3, 6> {
 public:
     // By default, initialise all quaternions to the identity quaternion, i.e.
     // nu = 1, u = [0 0 0]
-    inline Eigen::Quaterniond
-    construct_domain_impl() const {
-        return Eigen::Quaterniond::Identity();
+    static inline SE3
+    construct_domain_impl() {
+        return {R3Manifold::construct_domain_impl(), S3Manifold::construct_domain_impl()
+        };
     }
 
     Tangent_t logarithmic_map(Eigen::Quaterniond q) const;

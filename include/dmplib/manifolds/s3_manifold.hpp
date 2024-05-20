@@ -12,8 +12,8 @@ class S3Manifold : public RiemannManifold<S3Manifold, Eigen::Quaterniond, 3> {
 public:
     // By default, initialise all quaternions to the identity quaternion, i.e.
     // nu = 1, u = [0 0 0]
-    inline Eigen::Quaterniond
-    construct_domain_impl() const {
+    static inline Eigen::Quaterniond
+    construct_domain_impl() {
         return Eigen::Quaterniond::Identity();
     }
 
