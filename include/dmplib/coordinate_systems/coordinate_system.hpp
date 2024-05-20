@@ -12,7 +12,6 @@ enum RepresentationType {
 
 template <typename Derived, RepresentationType rep_type = POINT_TO_POINT>
 class CoordinateSystem : public Integrable<Derived> {
-
 public:
     static constexpr RepresentationType Type = rep_type;
 
@@ -25,6 +24,8 @@ public:
 
     GET_SET(_x, coordinate);
     GET_SET(_T, observation_period);
+    GETPTR(_T, observation_period_ptr);
+    GETCONSTPTR(_T, observation_period_const_ptr);
 };
 
 }  // namespace dmp
