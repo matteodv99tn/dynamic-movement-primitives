@@ -6,6 +6,6 @@ EdCs::ExponentialDecayCs(const double& alpha) {
     _alpha = alpha;
 }
 
-void EdCs::step() {
+void EdCs::step_impl() {
     _x -= _alpha * _x * _dt;
 }

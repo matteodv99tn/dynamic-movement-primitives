@@ -5,16 +5,16 @@
 
 namespace dmp {
 
-class PeriodicCs: public CoordinateSystem {
-public:
-    static constexpr RepresentationType Type = PERIODIC;
-
+class PeriodicCs : public CoordinateSystem<PeriodicCs, PERIODIC> {
 public:
     PeriodicCs();
 
-    void step();
-
     double get_Omega() const;
+
+protected:
+    // CRTP traits definition
+    friend class Integrable<PeriodicCs>;
+    void step_impl();
 };
 
 }  // namespace dmp

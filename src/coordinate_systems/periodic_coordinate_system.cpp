@@ -2,12 +2,14 @@
 
 #include <cmath>
 
+#include "dmplib/coordinate_systems/coordinate_system.hpp"
+
 using Pcs = dmp::PeriodicCs;
 
-Pcs::PeriodicCs() : CoordinateSystem(0) {}
+Pcs::PeriodicCs() : CoordinateSystem<Pcs, PERIODIC>::CoordinateSystem(0.0) {}
 
 void
-Pcs::step() {
+Pcs::step_impl() {
     _x += 2 * M_PI / _T * _dt;
 }
 
