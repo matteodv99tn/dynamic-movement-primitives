@@ -11,43 +11,27 @@ protected:
     double _dt;
 
 public:
-    Integrable() { _dt = 0.001; }
+    Integrable(const double& dt = 0.001);
 
-    Integrable(const double dt) { _dt = dt; };
-
-    void
-    step() {
-        static_cast<Derived*>(this)->step_impl();
-    }
+    // This function requires the derived class to implement
+    // void step_impl();
+    void step();
 
     inline double
     get_integration_period() const {
         return _dt;
     }
 
-    inline void
-    set_integration_period(const double& dt) {
-        _dt = dt;
-    }
+    inline void set_integration_period(const double& dt);
 
     template <typename Rep, typename Period>
     void set_integration_period(const std::chrono::duration<Rep, Period>& dt);
 
-    void
-    set_integration_frequency(const double& freq_hz) {
-        _dt = 1 / freq_hz;
-    }
+    void set_integration_frequency(const double& freq_hz);
 };
 
-template <typename D>
-template <typename Rep, typename Period>
-void
-Integrable<D>::set_integration_period(const std::chrono::duration<Rep, Period>& dt) {
-    using std::chrono::duration_cast;
-    using std::chrono::nanoseconds;
-    set_integration_period(duration_cast<nanoseconds>(dt).count() * 1e-9);
-}
-
 }  // namespace dmp
+
+#include "dmplib/class_traits/integrable.hxx"
 
 #endif  // DMPLIB_INTEGRABLE_CLASS_HPP__

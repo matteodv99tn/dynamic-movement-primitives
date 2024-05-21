@@ -11,14 +11,16 @@ namespace dmp {
 template <typename Manifold>
 class SecondOrderTf : public TransformationSystem<SecondOrderTf<Manifold>, Manifold> {
 public:
-    using M         = Manifold;
-    using Tangent_t = typename M::Tangent_t;
+    using TF = TransformationSystem<SecondOrderTf<Manifold>, Manifold>;
+    using typename TF::Forcing_t;
+    using typename TF::M;
+    using typename TF::constdoubleRef;
+    using Tangent_t           = typename M::Tangent_t;
+    using PosVelAccSample     = typename M::PosVelAccSample;
+    using PosVelAccTrajectory = typename M::PosVelAccTrajectory;
 
 protected:
-    using TF       = TransformationSystem<SecondOrderTf<Manifold>, Manifold>;
     using Integral = Integrable<SecondOrderTf<Manifold>>;
-
-    using typename TF::Forcing_t;
 
     // System parameters
     bool _alpha;
@@ -28,23 +30,18 @@ protected:
     Tangent_t _z;
 
 
-public:
-    SecondOrderTf(const typename TF::constdoubleRef& t);
-
-    using PosVelAccSample     = typename M::PosVelAccSample;
-    using PosVelAccTrajectory = typename M::PosVelAccTrajectory;
-
-
 protected:
+    // Trait implementation
     friend class Integrable<SecondOrderTf<Manifold>>;
     void step_impl();
 
     friend class TransformationSystem<SecondOrderTf<Manifold>, Manifold>;
-    Forcing_t forcing_term_from_demonstration_impl(
-            const PosVelAccSample& demonstration
+    Forcing_t forcing_term_from_demonstration_impl(const PosVelAccSample& demonstration
     );
 
 public:
+    SecondOrderTf(const constdoubleRef& t);
+
     inline double
     get_alpha() const {
         return _alpha;

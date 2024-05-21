@@ -18,11 +18,10 @@ SecondOrderTf<M>::SecondOrderTf(const typename TF::constdoubleRef& t) :
 template <typename M>
 void
 SecondOrderTf<M>::step_impl() {
-    const Tangent_t dz_dt =
-            _alpha * (2 * _beta * this->_M.logarithmic_map(this->_g, this->_y) - _z)
-            + this->_f;
-    const Tangent_t dy_dt = _z;
-    _z += dz_dt * this->_dt / this->_T;
+    const auto      pos_term = this->_M.logarithmic_map(this->_g, this->_y);
+    const Tangent_t dz_dt    = _alpha * (2 * _beta * pos_term - _z) + this->_f;
+    const Tangent_t dy_dt    = _z;
+    this->_z += dz_dt * this->_dt / this->_T;
     this->_y = this->_M.exponential_map(this->_y, _z);
 }
 

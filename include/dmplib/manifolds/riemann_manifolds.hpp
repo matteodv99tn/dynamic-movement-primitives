@@ -29,6 +29,7 @@ public:
     using Domain_t  = Domain;
     using Tangent_t = Eigen::Matrix<double, SUBSPACE_DIM, 1>;
 
+    // tuples type aliasing to help
     using PosSample           = Domain_t;
     using PosVelSample        = std::tuple<Domain_t, Tangent_t>;
     using PosVelAccSample     = std::tuple<Domain_t, Tangent_t, Tangent_t>;
@@ -41,7 +42,6 @@ public:
         return Tangent_t::Zero();
     }
 
-
     inline Domain_t
     construct_domain() const {
         static_assert(
@@ -52,7 +52,7 @@ public:
         );
 
         if constexpr (dmp::has_custom_constructor_v<Derived>)
-            return Derived::construct_domain_impl();
+            return static_cast<const Derived*>(this)->construct_domain_impl();
 
         if constexpr (std::is_default_constructible<Domain_t>::value) return Domain_t();
     }
