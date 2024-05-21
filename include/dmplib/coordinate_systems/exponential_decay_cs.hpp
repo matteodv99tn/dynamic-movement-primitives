@@ -13,7 +13,15 @@ protected:
 public:
     ExponentialDecayCs(const double& alpha);
 
-    GET_SET(_alpha, alpha);
+    inline double
+    get_alpha() const {
+        return _alpha;
+    }
+
+    inline void
+    set_alpha(const double& alpha) {
+        _alpha = alpha;
+    }
 
 protected:
     // CRTP traits definition

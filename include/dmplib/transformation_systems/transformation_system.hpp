@@ -1,39 +1,89 @@
 #ifndef DMPLIB_TRANSFORMATION_SYSTEM_HPP__
 #define DMPLIB_TRANSFORMATION_SYSTEM_HPP__
 
+#include <functional>
+
 #include "dmplib/class_traits/integrable.hpp"
+#include "range/v3/range/conversion.hpp"
+#include "range/v3/view/transform.hpp"
 
 namespace dmp {
 
 template <typename Derived, typename Manifold>
 class TransformationSystem : public Integrable<Derived> {
 public:
-    using M = Manifold;
+    using M              = Manifold;
+    using Domain_t       = typename M::Domain_t;
+    using Tangent_t      = typename M::Tangent_t;
+    using constdoubleRef = std::reference_wrapper<const double>;
+
+
+    using Forcing_t = typename M::Tangent_t;
 
 protected:
-    using forcing_type = typename M::Tangent_t;
-    forcing_type  _f;
-    const double* _T;
+    Forcing_t   _f;
+    constdoubleRef _T;
 
-    typename M::Domain_t _y;  //< "position" state
-    typename M::Domain_t _g;  //< goal
+    Domain_t _y;  //< "position" state
+    Domain_t _g;  //< goal
+
+    Manifold _M;
 
 
 public:
-    TransformationSystem() {
-        _f = forcing_type::Zero();
-        _T = nullptr;
-
-        _y = M::construct_domain();
-        _g = M::construct_domain();
+    TransformationSystem(const constdoubleRef& T) : _T(T) {
+        _f = Forcing_t::Zero();
+        _y = this->_M.construct_domain();
+        _g = this->_M.construct_domain();
     }
 
-    GET_SET(_f, forcing_term);
-    SET(_T, observation_period_ptr);
+    inline Forcing_t
+    get_forcing_term() const {
+        return _f;
+    }
 
-    GET_SET(_y, state);
+    template <typename T>
+    Forcing_t
+    forcing_term_from_demonstration(const T& sample) {
+        return static_cast<Derived*>(this)->forcing_term_from_demonstration_impl(sample
+        );
+    }
 
-    GET_SET(_g, goal);
+    template <typename T>
+    std::vector<Forcing_t>
+    forcing_term_from_demonstration(const std::vector<T>& trajectory) {
+        namespace rv = ranges::views;
+        namespace rs = ranges;
+        return trajectory | rv::transform([this](const auto& sample) {
+                   return forcing_term_from_demonstration(sample);
+               })
+               | rs::to_vector;
+    }
+
+    inline void
+    set_forcing_term(const Forcing_t& f) {
+        _f = f;
+    }
+
+    inline Domain_t
+    get_state() const {
+        return _y;
+    }
+
+    inline void
+    set_state(const Domain_t& y) {
+        _y = y;
+    }
+
+    inline Domain_t
+    get_goal() const {
+        return _g;
+    }
+
+    inline void
+    set_goal(const Domain_t& g) {
+        _g = g;
+    }
 };
 }  // namespace dmp
 

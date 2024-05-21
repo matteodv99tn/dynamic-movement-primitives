@@ -12,8 +12,8 @@ class RnManifold
 public:
     using Vec = Eigen::Matrix<double, N, 1>;
 
-    static inline Vec
-    construct_domain_impl() {
+    inline Vec
+    construct_domain_impl() const {
         return Vec::Zero();
     }
 

@@ -36,14 +36,14 @@ public:
     using PosVelTrajectory    = std::vector<PosVelSample>;
     using PosVelAccTrajectory = std::vector<PosVelAccSample>;
 
-    static inline Tangent_t
-    construct_tangent() {
+    inline Tangent_t
+    construct_tangent() const {
         return Tangent_t::Zero();
     }
 
 
-    static inline Domain_t
-    construct_domain()  {
+    inline Domain_t
+    construct_domain() const {
         static_assert(
                 dmp::has_custom_constructor_v<Derived>
                         || std::is_default_constructible<Domain_t>::value,

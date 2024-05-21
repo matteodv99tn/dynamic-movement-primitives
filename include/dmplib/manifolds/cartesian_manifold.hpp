@@ -1,7 +1,7 @@
 #ifndef DMP_CARTESIAN_MANIFOLD_HPP__
 #define DMP_CARTESIAN_MANIFOLD_HPP__
 
-#include "dmp/manifolds/rn_manifold.hpp"
+#include "dmplib/manifolds/rn_manifold.hpp"
 
 namespace dmp {
 
