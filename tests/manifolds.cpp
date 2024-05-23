@@ -1,56 +1,51 @@
 #include <iostream>
 
 #include "dmplib/class_traits/integrable.hpp"
-#include "dmplib/data_handler/data_serialiser.hpp"
-#include "dmplib/data_handler/timeseries.hpp"
-#include "dmplib/manifolds/rn_manifold.hpp"
-#include "dmplib/manifolds/s3_manifold.hpp"
-#include "dmplib/manifolds/se3_manifold.hpp"
-#include "dmplib/systems/first_order_system.hpp"
-#include "dmplib/systems/second_order_system.hpp"
+#include "dmplib/learnable_functions/basis_functions/basis_function.hpp"
 
 int
 main() {
-    static_assert(
-            std::is_default_constructible_v<Eigen::Quaterniond>, "Quat not const"
-    );
 
-    dmp::S3Manifold  s3;
-    dmp::R3Manifold  r3;
-    dmp::SE3Manifold se3;
+    // static_assert(
+    //         std::is_default_constructible_v<Eigen::Quaterniond>, "Quat not const"
+    // );
 
-
-    dmp::Integrable i;
-
-    dmp::FirstOrderSystem<dmp::S3Manifold> sys;
-    dmp::FirstOrderSystem<dmp::R3Manifold> cartesian;
+    // dmp::S3Manifold  s3;
+    // dmp::R3Manifold  r3;
+    // dmp::SE3Manifold se3;
 
 
-    Eigen::Quaterniond q{0.5, 0.5, 0.5, 0.5};
-    q.normalize();
-    sys.set_goal(q);
+    // dmp::Integrable i;
 
-    cartesian.set_goal(Eigen::Vector3d{1, 2, 3});
+    // dmp::FirstOrderSystem<dmp::S3Manifold> sys;
+    // dmp::FirstOrderSystem<dmp::R3Manifold> cartesian;
 
-    std::cout << "Goal: " << sys.g << std::endl;
-    std::cout << "State: " << sys.x << std::endl;
 
-    dmp::TimeSeriesContainer<Eigen::Quaterniond> data;
-    dmp::TimeSeriesContainer<Eigen::Vector3d>    data_2;
+    // Eigen::Quaterniond q{0.5, 0.5, 0.5, 0.5};
+    // q.normalize();
+    // sys.set_goal(q);
 
-    sys.start_state_logger();
-    cartesian.start_state_logger();
+    // cartesian.set_goal(Eigen::Vector3d{1, 2, 3});
 
-    for (int i = 0; i < 10; i++) {
-        sys.step();
-        cartesian.step();
-        data.push_back(sys.x);
-    }
+    // std::cout << "Goal: " << sys.g << std::endl;
+    // std::cout << "State: " << sys.x << std::endl;
 
-    auto lg = cartesian.get_state_logger();
-    std::cout << lg->to_table() << std::endl;
-    auto lg2 = sys.get_state_logger();
-    std::cout << lg2->to_table() << std::endl;
+    // dmp::TimeSeriesContainer<Eigen::Quaterniond> data;
+    // dmp::TimeSeriesContainer<Eigen::Vector3d>    data_2;
+
+    // sys.start_state_logger();
+    // cartesian.start_state_logger();
+
+    // for (int i = 0; i < 10; i++) {
+    //     sys.step();
+    //     cartesian.step();
+    //     data.push_back(sys.x);
+    // }
+
+    // auto lg = cartesian.get_state_logger();
+    // std::cout << lg->to_table() << std::endl;
+    // auto lg2 = sys.get_state_logger();
+    // std::cout << lg2->to_table() << std::endl;
 
     return 0;
 }

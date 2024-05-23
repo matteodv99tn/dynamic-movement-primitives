@@ -1,19 +1,44 @@
 #include <iostream>
 #include <vector>
 
+#include "dmplib/coordinate_systems/periodic_coordinate_system.hpp"
+#include "dmplib/manifolds/s3_manifold.hpp"
+#include "dmplib/manifolds/se3_manifold.hpp"
+#include "dmplib/transformation_systems/second_order_tf.hpp"
+
 
 using namespace std;
 
 int
 main() {
-    vector<int> v;
+    /*
+    dmp::PeriodicCs cs;
+    cs.step();
 
-    v.reserve(5);
+    double                              t = 1;
+    dmp::SecondOrderTf<dmp::S3Manifold> tf(std::cref(t));
+    std::cout << tf.get_state() << std::endl;
 
+    // // tf.forcing_term_from_demonstration(const PosVelAccSample &demonstration)
 
-    for (int i = 0; i < 10; i++) v.push_back(i);
+    using Vec3 = Eigen::Vector3d;
+    using Vec6 = Eigen::Matrix<double, 6, 1>;
+    using Quat = Eigen::Quaterniond;
 
-    for (auto x : v) cout << x << endl;
+    typename dmp::S3Manifold::PosVelAccTrajectory traj = {
+            {Quat::Identity(), Vec3::Zero(), Vec3::Zero()},
+            {Quat::Identity(), Vec3::Zero(), Vec3::Zero()},
+            {Quat::Identity(), Vec3::Zero(), Vec3::Zero()},
+            {Quat::Identity(), Vec3::Zero(), Vec3::Zero()},
+            {Quat::Identity(), Vec3::Zero(), Vec3::Zero()},
+            {Quat::Identity(), Vec3::Zero(), Vec3::Zero()},
+            {Quat::Identity(), Vec3::Zero(), Vec3::Zero()}
+    };
+
+    tf.forcing_term_from_demonstration(traj);
+    tf.step();
+
+    */
 
     return 0;
 }
