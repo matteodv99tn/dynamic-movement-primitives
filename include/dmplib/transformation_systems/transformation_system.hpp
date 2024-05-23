@@ -1,5 +1,5 @@
-#ifndef DMPLIB_TRANSFORMATION_SYSTEM_HPP__
-#define DMPLIB_TRANSFORMATION_SYSTEM_HPP__
+#ifndef DMPLIB_TRANSFORMATION_SYSTEM_HPP
+#define DMPLIB_TRANSFORMATION_SYSTEM_HPP
 
 #include <functional>
 
@@ -12,30 +12,31 @@ namespace dmp {
 template <typename Derived, typename Manifold>
 class TransformationSystem : public Integrable<Derived> {
 public:
-    using M              = Manifold;
-    using Domain_t       = typename M::Domain_t;
-    using Tangent_t      = typename M::Tangent_t;
-    using constdoubleRef = std::reference_wrapper<const double>;
+    using M                = Manifold;  // NOLINT
+    using Domain_t         = typename M::Domain_t;
+    using Tangent_t        = typename M::Tangent_t;
+    using ConstdoubleRef_t = std::reference_wrapper<const double>;
 
 
     using Forcing_t = typename M::Tangent_t;
 
 protected:
-    Forcing_t   _f;
-    constdoubleRef _T;
+    Manifold _M; // NOLINT
+                 //
+    Forcing_t        _f;
+    ConstdoubleRef_t _T; // NOLINT
 
     Domain_t _y;  //< "position" state
     Domain_t _g;  //< goal
 
-    Manifold _M;
 
 
 public:
-    TransformationSystem(const constdoubleRef& T) : _T(T) {
-        _f = Forcing_t::Zero();
-        _y = this->_M.construct_domain();
-        _g = this->_M.construct_domain();
-    }
+    TransformationSystem(const ConstdoubleRef_t& T) :
+            _T(T),
+            _f(Forcing_t::Zero()),
+            _y(_M.construct_domain()),
+            _g(_M.construct_domain()) {}
 
     inline Forcing_t
     get_forcing_term() const {
@@ -88,4 +89,4 @@ public:
 }  // namespace dmp
 
 
-#endif  // DMPLIB_TRANSFORMATION_SYSTEM_HPP__
+#endif  // DMPLIB_TRANSFORMATION_SYSTEM_HPP
