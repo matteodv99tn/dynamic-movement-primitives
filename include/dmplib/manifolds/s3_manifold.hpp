@@ -1,5 +1,5 @@
-#ifndef DMP_S3_MANIFOLD_HPP__
-#define DMP_S3_MANIFOLD_HPP__
+#ifndef DMPLIB_S3_MANIFOLD_HPP
+#define DMPLIB_S3_MANIFOLD_HPP
 
 #include <Eigen/Geometry>
 
@@ -17,19 +17,19 @@ public:
         return Eigen::Quaterniond::Identity();
     }
 
-    Tangent_t logarithmic_map_single(Eigen::Quaterniond q) const;
+    [[nodiscard]] static Tangent_t logarithmic_map_single(Eigen::Quaterniond q);
 
-    Domain_t exponential_map_single(Tangent_t v) const;
+    [[nodiscard]] static Domain_t exponential_map_single(const Tangent_t& v);
 
-    Tangent_t logarithmic_map_impl(
+    [[nodiscard]] static Tangent_t logarithmic_map_impl(
             const Eigen::Quaterniond& qp, const Eigen::Quaterniond& qx
-    ) const;
+    );
 
-    Domain_t exponential_map_impl(
+    [[nodiscard]] static Domain_t exponential_map_impl(
             const Eigen::Quaterniond& application_point, const Tangent_t& v
-    ) const;
+    );
 };
 
 }  // namespace dmp
 
-#endif  // DMP_S3_MANIFOLD_HPP__
+#endif  // DMPLIB_S3_MANIFOLD_HPP

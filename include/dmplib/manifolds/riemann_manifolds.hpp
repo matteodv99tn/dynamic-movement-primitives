@@ -1,5 +1,5 @@
-#ifndef DMP_RIEMANN_MANIFOLDS_HPP__
-#define DMP_RIEMANN_MANIFOLDS_HPP__
+#ifndef DMPLIB_RIEMANN_MANIFOLDS_HPP
+#define DMPLIB_RIEMANN_MANIFOLDS_HPP
 
 #include <Eigen/Dense>
 #include <tuple>
@@ -21,28 +21,28 @@ namespace dmp {
  * @tparam Domain Type of the domain obj. used for computation
  * @tparam SUBSPACE_DIM Dimension of the embedding space
  */
-template <typename Derived, typename Domain, std::size_t SUBSPACE_DIM>
+template <typename Derived, typename Domain, std::size_t Subspace_Dim>
 class RiemannManifold {
 public:
-    static constexpr std::size_t subspace_dim = SUBSPACE_DIM;
+    static constexpr std::size_t subspace_dim = Subspace_Dim;
 
     using Domain_t  = Domain;
-    using Tangent_t = Eigen::Matrix<double, SUBSPACE_DIM, 1>;
+    using Tangent_t = Eigen::Matrix<double, Subspace_Dim, 1>;
 
     // tuples type aliasing to help
-    using PosSample           = Domain_t;
-    using PosVelSample        = std::tuple<Domain_t, Tangent_t>;
-    using PosVelAccSample     = std::tuple<Domain_t, Tangent_t, Tangent_t>;
-    using PosTrajectory       = std::vector<PosSample>;
-    using PosVelTrajectory    = std::vector<PosVelSample>;
-    using PosVelAccTrajectory = std::vector<PosVelAccSample>;
+    using PosSample_t           = Domain_t;
+    using PosVelSample_t        = std::tuple<Domain_t, Tangent_t>;
+    using PosVelAccSample_t     = std::tuple<Domain_t, Tangent_t, Tangent_t>;
+    using PosTrajectory_t       = std::vector<PosSample_t>;
+    using PosVelTrajectory_t    = std::vector<PosVelSample_t>;
+    using PosVelAccTrajectory_t = std::vector<PosVelAccSample_t>;
 
-    inline Tangent_t
+    [[nodiscard]] inline Tangent_t
     construct_tangent() const {
         return Tangent_t::Zero();
     }
 
-    inline Domain_t
+    [[nodiscard]] inline Domain_t
     construct_domain() const {
         static_assert(
                 dmp::has_custom_constructor_v<Derived>
@@ -51,8 +51,9 @@ public:
                 "implementation did not provide a valid constructor"
         );
 
-        if constexpr (dmp::has_custom_constructor_v<Derived>)
+        if constexpr (dmp::has_custom_constructor_v<Derived>) {
             return static_cast<const Derived*>(this)->construct_domain_impl();
+        }
 
         if constexpr (std::is_default_constructible<Domain_t>::value) return Domain_t();
     }
@@ -67,7 +68,7 @@ public:
      * @param[input] x point that's projected in the tangent space
      * @return the tangent vector of the operation
      */
-    Tangent_t
+    [[nodiscard]] Tangent_t
     logarithmic_map(const Domain_t& p, const Domain_t& x) const {
         return static_cast<const Derived*>(this)->logarithmic_map_impl(p, x);
     }
@@ -85,11 +86,11 @@ public:
      * @param[input] dt scaling term of the vector v, defaults to 1
      * @return the point after integration
      */
-    Domain_t
+    [[nodiscard]] Domain_t
     exponential_map(const Domain_t& p, const Tangent_t& v, const double& dt = 1) const {
         return static_cast<const Derived*>(this)->exponential_map_impl(p, v * dt);
     }
 };
 }  // namespace dmp
 
-#endif  // DMP_RIEMANN_MANIFOLDS_HPP__
+#endif  // DMPLIB_RIEMANN_MANIFOLDS_HPP

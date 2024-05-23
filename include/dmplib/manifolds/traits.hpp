@@ -1,12 +1,12 @@
-#ifndef DMP_MANIFOLDS_TRAITS_HPP__
-#define DMP_MANIFOLDS_TRAITS_HPP__
+#ifndef DMPLIB_MANIFOLDS_TRAITS_HPP
+#define DMPLIB_MANIFOLDS_TRAITS_HPP
 
 #include <type_traits>
 
 namespace dmp {
 
 template <typename T>
-struct has_custom_constructor {
+struct HasCustomConstructor {
 private:
     template <typename U>
     static auto test(int)
@@ -21,9 +21,9 @@ public:
 };
 
 template <typename T>
-static constexpr bool has_custom_constructor_v = has_custom_constructor<T>::value;
+static constexpr bool has_custom_constructor_v = HasCustomConstructor<T>::value;
 
 }  // namespace dmp
 
 
-#endif  // DMP_MANIFOLDS_TRAITS_HPP__
+#endif  // DMPLIB_MANIFOLDS_TRAITS_HPP
