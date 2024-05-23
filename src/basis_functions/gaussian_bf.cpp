@@ -4,36 +4,36 @@
 #include <iostream>
 
 #include "fmt/core.h"
-#include "range/v3/view/transform.hpp"
-#include "range/v3/view/zip.hpp"
+#include "fmt/ostream.h"
 #include "range/v3/view/iota.hpp"
 #include "range/v3/view/sliding.hpp"
+#include "range/v3/view/transform.hpp"
+#include "range/v3/view/zip.hpp"
 
 namespace rs = ranges;
 namespace rv = ranges::views;
 
 
-using Gbf = dmp::GaussianBf;
+using Gbf_t = dmp::GaussianBf;
 
-Gbf::GaussianBf(
+Gbf_t::GaussianBf(
         const std::size_t& basis_size,
         const double&      alpha,
         const double&      min_support,
         const double&      max_support,
         const bool&        include_ub
 ) :
-        BasisFunction<GaussianBf>(basis_size, min_support, max_support, include_ub) {
-    _alpha = alpha;
-};
+        BasisFunction<GaussianBf>(basis_size, min_support, max_support, include_ub),
+        _alpha(alpha){};
 
-Gbf::Basis
-Gbf::evaluate_impl(const double& arg) {
-    Basis res = Basis::Zero(_basis_size);
+Gbf_t::Basis_t
+Gbf_t::evaluate_impl(const double& arg) {
+    Basis_t res = Basis_t::Zero(static_cast<Eigen::Index>(_basis_size));
 
     rs::copy(
             rv::zip(_c, _h) | rv::transform([x = arg](const auto&& tpl) {
                 auto& [c, h] = tpl;
-                return std::exp(-h * std::pow(x - c, 2.0));
+                return std::exp(-h * std::pow(x - c, 2.0));  // NOLINT
             }),
             res.data()
     );
@@ -42,14 +42,13 @@ Gbf::evaluate_impl(const double& arg) {
 }
 
 void
-Gbf::init_on_support(const bool& /* include_ub */) {
-    auto ci_formula = [a = _alpha, n = _basis_size](const int& i) -> double {
-        return std::exp((-a * i - 1.0) / (n - 1));
-    };
+Gbf_t::init_on_support(const bool& /* include_ub */) {
+    auto ci_formula = [a = _alpha, n = static_cast<double>(_basis_size)](const int& i
+                      ) -> double { return std::exp((-a * i - 1.0) / (n - 1.0)); };
 
     auto hi_formula = [](const auto&& tpl) -> double {
         auto& [h_curr, h_next] = tpl;
-        return 1 / std::pow(h_next - h_curr, 2.0);
+        return 1 / std::pow(h_next - h_curr, 2.0);  // NOLINT
     };
 
     _c.reserve(_basis_size);
@@ -60,39 +59,41 @@ Gbf::init_on_support(const bool& /* include_ub */) {
 }
 
 void
-Gbf::set_c_coefficients(const std::vector<double>& c) {
+Gbf_t::set_c_coefficients(const std::vector<double>& c) {
     if (c.size() != _basis_size) {
-        std::cerr << fmt::format(
+        fmt::println(
+                std::cerr,
                 "DMPLIB WARN: Provided vector for c coefficients has {} elements, but "
                 "{} are expected. Leaving content unchanged",
                 c.size(),
                 _basis_size
-        ) << std::endl;
+        );
         return;
     }
     _c = c;
 }
 
 std::vector<double>
-Gbf::get_c_coefficients() const {
+Gbf_t::get_c_coefficients() const {
     return _c;
 }
 
 void
-Gbf::set_h_coefficients(const std::vector<double>& h) {
+Gbf_t::set_h_coefficients(const std::vector<double>& h) {
     if (h.size() != _basis_size) {
-        std::cerr << fmt::format(
+        fmt::print(
+                std::cerr,
                 "DMPLIB WARN: Provided vector for h coefficients has {} elements, but "
                 "{} are expected. Leaving content unchanged",
                 h.size(),
                 _basis_size
-        ) << std::endl;
+        );
         return;
     }
     _h = h;
 }
 
 std::vector<double>
-Gbf::get_h_coefficients() const {
+Gbf_t::get_h_coefficients() const {
     return _h;
 }

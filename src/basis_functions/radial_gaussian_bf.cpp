@@ -24,9 +24,9 @@ Rgbf::RadialGaussianBf(
                 basis_size, min_support, max_support, include_ub
         ){};
 
-Rgbf::Basis
+Rgbf::Basis_t
 Rgbf::evaluate_impl(const double& arg) {
-    Basis res = Basis::Zero(_basis_size);
+    Basis_t res = Basis_t::Zero(_basis_size);
 
     rs::copy(
             rv::zip(_c, _h) | rv::transform([x = arg](const auto&& tpl) {

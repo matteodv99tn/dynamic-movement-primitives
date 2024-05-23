@@ -29,7 +29,7 @@ public:
 
 protected:
     friend class BasisFunction<RadialGaussianBf>;
-    Basis evaluate_impl(const double& arg);
+    Basis_t evaluate_impl(const double& arg);
 
     void init_on_support(const bool& include_ub);
 
