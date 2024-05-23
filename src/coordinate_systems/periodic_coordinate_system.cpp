@@ -4,16 +4,16 @@
 
 #include "dmplib/coordinate_systems/coordinate_system.hpp"
 
-using Pcs = dmp::PeriodicCs;
+using Pcs_t = dmp::PeriodicCs;
 
-Pcs::PeriodicCs() : CoordinateSystem<Pcs, PERIODIC>::CoordinateSystem(0.0) {}
+Pcs_t::PeriodicCs() : CoordinateSystem<Pcs_t, PERIODIC>::CoordinateSystem(0.0) {}
 
 void
-Pcs::step_impl() {
+Pcs_t::step_impl() {
     _x += 2 * M_PI / _T * _dt;
 }
 
 double
-Pcs::get_Omega() const {
+Pcs_t::get_Omega() const {
     return 1 / _T;
 }

@@ -12,7 +12,10 @@ Checks: "
         -modernize-use-trailing-return-type,
         -readability-identifier-length,
         -misc-include-cleaner,
-        -readability-inconsistent-declaration-parameter-name
+        -readability-inconsistent-declaration-parameter-name,
+        -misc-non-private-member-variables-in-classes,
+        -cppcoreguidelines-non-private-member-variables-in-classes,
+        -bugprone-easily-swappable-parameters,
         "
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'

@@ -1,5 +1,5 @@
-#ifndef DMPLIB_PERIODIC_COORDINATE_SYSTEM_HPP__
-#define DMPLIB_PERIODIC_COORDINATE_SYSTEM_HPP__
+#ifndef DMPLIB_PERIODIC_COORDINATE_SYSTEM_HPP
+#define DMPLIB_PERIODIC_COORDINATE_SYSTEM_HPP
 
 #include "dmplib/coordinate_systems/coordinate_system.hpp"
 
@@ -9,7 +9,8 @@ class PeriodicCs : public CoordinateSystem<PeriodicCs, PERIODIC> {
 public:
     PeriodicCs();
 
-    double get_Omega() const;
+    [[nodiscard]] double get_Omega(  // NOLINT: desired to have Omega with capital "O"
+    ) const;
 
 protected:
     // CRTP traits definition
@@ -20,4 +21,4 @@ protected:
 }  // namespace dmp
 
 
-#endif  // DMPLIB_PERIODIC_COORDINATE_SYSTEM_HPP__
+#endif  // DMPLIB_PERIODIC_COORDINATE_SYSTEM_HPP

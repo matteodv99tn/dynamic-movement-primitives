@@ -1,5 +1,5 @@
-#ifndef DMPLIB_COORDINATE_SYSTEM_HPP__
-#define DMPLIB_COORDINATE_SYSTEM_HPP__
+#ifndef DMPLIB_COORDINATE_SYSTEM_HPP
+#define DMPLIB_COORDINATE_SYSTEM_HPP
 
 #include <functional>
 
@@ -11,19 +11,22 @@ enum RepresentationType {
     PERIODIC
 };
 
-template <typename Derived, RepresentationType rep_type = POINT_TO_POINT>
+template <typename Derived, RepresentationType Rep_type = POINT_TO_POINT>
 class CoordinateSystem : public Integrable<Derived> {
 public:
-    static constexpr RepresentationType Type = rep_type;
+    static constexpr RepresentationType type = Rep_type;
 
 protected:
     double _x;  //< coordinate
-    double _T;  //< observation period
+    double _T;  //< observation period NOLINT
 
 public:
-    CoordinateSystem(const double& initial_value = 1) { _x = initial_value; }
+    CoordinateSystem(
+            const double& initial_value = 1, const double& observation_period = 1
+    ) :
+            _x(initial_value), _T(observation_period) {}
 
-    inline double
+    [[nodiscard]] inline double
     get_coordinate() const {
         return _x;
     }
@@ -52,4 +55,4 @@ public:
 }  // namespace dmp
 
 
-#endif  // DMPLIB_COORDINATE_SYSTEM_HPP__
+#endif  // DMPLIB_COORDINATE_SYSTEM_HPP
