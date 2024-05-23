@@ -21,13 +21,14 @@ AllowAllParametersOfDeclarationOnNextLine: True
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: False
 AllowShortEnumsOnASingleLine: False
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: InlineOnly
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: True
 AlwaysBreakBeforeMultilineStrings: True
 # AlwaysBreakTemplateDeclarations: True
 AlwaysBreakAfterDefinitionReturnType: All
+# BreakAfterReturnType: ExceptShortType
 BinPackArguments: False
 BinPackParameters: False
 BreakBeforeBraces: Attach
