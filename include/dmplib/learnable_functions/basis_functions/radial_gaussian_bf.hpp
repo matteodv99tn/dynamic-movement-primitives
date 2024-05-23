@@ -1,5 +1,5 @@
-#ifndef DMPLIB_RADIAL_GAUSSIAN_BASIS_FUNCTION_HPP__
-#define DMPLIB_RADIAL_GAUSSIAN_BASIS_FUNCTION_HPP__
+#ifndef DMPLIB_RADIAL_GAUSSIAN_BASIS_FUNCTION_HPP
+#define DMPLIB_RADIAL_GAUSSIAN_BASIS_FUNCTION_HPP
 
 #include <vector>
 
@@ -20,11 +20,13 @@ public:
             const bool&        include_ub  = false
     );
 
-    void                set_c_coefficients(const std::vector<double>& c);
-    std::vector<double> get_c_coefficients() const;
+    void set_c_coefficients(const std::vector<double>& c);
 
-    void                set_h_coefficients(const std::vector<double>& h);
-    std::vector<double> get_h_coefficients() const;
+    [[nodiscard]] std::vector<double> get_c_coefficients() const;
+
+    void set_h_coefficients(const std::vector<double>& h);
+
+    [[nodiscard]] std::vector<double> get_h_coefficients() const;
 
 
 protected:
@@ -32,11 +34,10 @@ protected:
     Basis_t evaluate_impl(const double& arg);
 
     void init_on_support(const bool& include_ub);
-
 };
 
 
 }  // namespace dmp
 
 
-#endif  // DMPLIB_RADIAL_GAUSSIAN_BASIS_FUNCTION_HPP__
+#endif  // DMPLIB_RADIAL_GAUSSIAN_BASIS_FUNCTION_HPP
