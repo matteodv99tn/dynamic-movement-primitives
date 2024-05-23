@@ -10,7 +10,7 @@ using Eigen::Quaterniond;  // domain
 using Vec3_t = S3Manifold::Tangent_t;
 
 Vec3_t
-S3Manifold::logarithmic_map_single(Quaterniond q) {
+S3Manifold::logarithmic_map_single(Quaterniond q) const { // NOLINT
     if (q.w() < 0) q.coeffs() = -q.coeffs();
     const Eigen::Vector3d u  = q.vec();
     const double          nu = q.w();
@@ -20,17 +20,17 @@ S3Manifold::logarithmic_map_single(Quaterniond q) {
 }
 
 Vec3_t
-S3Manifold::logarithmic_map_impl(const Quaterniond& qp, const Quaterniond& qx) {
+S3Manifold::logarithmic_map_impl(const Quaterniond& qp, const Quaterniond& qx) const {
     return logarithmic_map_single(qx * qp.conjugate());
 }
 
 Quaterniond
-S3Manifold::exponential_map_impl(const Quaterniond& p, const Vec3_t& v) {
+S3Manifold::exponential_map_impl(const Quaterniond& p, const Vec3_t& v) const {
     return exponential_map_single(v) * p;
 }
 
 Quaterniond
-S3Manifold::exponential_map_single(const Vec3_t& v) {
+S3Manifold::exponential_map_single(const Vec3_t& v) const { // NOLINT
     if (v.norm() < dmp::constants::zero_th) return Quaterniond::Identity();
 
     Quaterniond q;

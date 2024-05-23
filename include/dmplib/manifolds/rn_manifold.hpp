@@ -1,5 +1,5 @@
-#ifndef DMP_RN_MANIFOLD_HPP__
-#define DMP_RN_MANIFOLD_HPP__
+#ifndef DMP_RN_MANIFOLD_HPP
+#define DMP_RN_MANIFOLD_HPP
 
 #include "dmplib/manifolds/riemann_manifolds.hpp"
 
@@ -10,20 +10,20 @@ template <int N>
 class RnManifold
         : public RiemannManifold<RnManifold<N>, Eigen::Matrix<double, N, 1>, N> {
 public:
-    using Vec = Eigen::Matrix<double, N, 1>;
+    using Vec_t = Eigen::Matrix<double, N, 1>;
 
-    inline Vec
+    [[nodiscard]] inline Vec_t
     construct_domain_impl() const {
-        return Vec::Zero();
+        return Vec_t::Zero();
     }
 
-    Vec
-    logarithmic_map_impl(const Vec& p, const Vec& x) const {
+    [[nodiscard]] Vec_t
+    logarithmic_map_impl(const Vec_t& p, const Vec_t& x) const {
         return (x - p);
     }
 
-    Vec
-    exponential_map_impl(const Vec& p, const Vec& v) const {
+    [[nodiscard]] Vec_t
+    exponential_map_impl(const Vec_t& p, const Vec_t& v) const {
         return p + v;
     }
 };
@@ -32,4 +32,4 @@ class R3Manifold : public RnManifold<3> {};
 
 }  // namespace dmp
 
-#endif  // DMP_RN_MANIFOLD_HPP__
+#endif  // DMP_RN_MANIFOLD_HPP

@@ -12,22 +12,22 @@ class S3Manifold : public RiemannManifold<S3Manifold, Eigen::Quaterniond, 3> {
 public:
     // By default, initialise all quaternions to the identity quaternion, i.e.
     // nu = 1, u = [0 0 0]
-    static inline Eigen::Quaterniond
-    construct_domain_impl() {
+    [[nodiscard]] inline Eigen::Quaterniond
+    construct_domain_impl() const { // NOLINT: don't want static members
         return Eigen::Quaterniond::Identity();
     }
 
-    [[nodiscard]] static Tangent_t logarithmic_map_single(Eigen::Quaterniond q);
+    [[nodiscard]] Tangent_t logarithmic_map_single(Eigen::Quaterniond q) const;
 
-    [[nodiscard]] static Domain_t exponential_map_single(const Tangent_t& v);
+    [[nodiscard]] Domain_t exponential_map_single(const Tangent_t& v) const;
 
-    [[nodiscard]] static Tangent_t logarithmic_map_impl(
+    [[nodiscard]] Tangent_t logarithmic_map_impl(
             const Eigen::Quaterniond& qp, const Eigen::Quaterniond& qx
-    );
+    ) const;
 
-    [[nodiscard]] static Domain_t exponential_map_impl(
+    [[nodiscard]] Domain_t exponential_map_impl(
             const Eigen::Quaterniond& application_point, const Tangent_t& v
-    );
+    ) const;
 };
 
 }  // namespace dmp
