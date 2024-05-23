@@ -1,5 +1,5 @@
-#ifndef DMPLIB_EXPONENTIAL_DECAY_COORDINATE_SYSTEM_HPP__
-#define DMPLIB_EXPONENTIAL_DECAY_COORDINATE_SYSTEM_HPP__
+#ifndef DMPLIB_EXPONENTIAL_DECAY_COORDINATE_SYSTEM_HPP
+#define DMPLIB_EXPONENTIAL_DECAY_COORDINATE_SYSTEM_HPP
 
 #include "dmplib/class_traits/integrable.hpp"
 #include "dmplib/coordinate_systems/coordinate_system.hpp"
@@ -13,7 +13,7 @@ protected:
 public:
     ExponentialDecayCs(const double& alpha);
 
-    inline double
+    [[nodiscard]] inline double
     get_alpha() const {
         return _alpha;
     }
@@ -32,4 +32,4 @@ protected:
 }  // namespace dmp
 
 
-#endif  // DMPLIB_EXPONENTIAL_DECAY_COORDINATE_SYSTEM_HPP__
+#endif  // DMPLIB_EXPONENTIAL_DECAY_COORDINATE_SYSTEM_HPP
