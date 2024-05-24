@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "dmplib/manifolds/traits.hpp"
+#include "dmplib/manifolds/domains/domains.hpp"
 
 namespace dmp {
 
@@ -21,13 +22,12 @@ namespace dmp {
  * @tparam Domain Type of the domain obj. used for computation
  * @tparam SUBSPACE_DIM Dimension of the embedding space
  */
-template <typename Derived, typename Domain, std::size_t Subspace_Dim>
+template <typename Derived, typename Domain>
 class RiemannManifold {
 public:
-    static constexpr std::size_t subspace_dim = Subspace_Dim;
 
     using Domain_t  = Domain;
-    using Tangent_t = Eigen::Matrix<double, Subspace_Dim, 1>;
+    using Tangent_t = typename tangent_space_t<Domain>::Tangent_t;
 
     // tuples type aliasing to help
     using PosSample_t           = Domain_t;

@@ -8,7 +8,7 @@
 namespace dmp {
 
 // Space of a quaternion
-class S3Manifold : public RiemannManifold<S3Manifold, Eigen::Quaterniond, 3> {
+class S3Manifold : public RiemannManifold<S3Manifold, Eigen::Quaterniond> {
 public:
     // By default, initialise all quaternions to the identity quaternion, i.e.
     // nu = 1, u = [0 0 0]

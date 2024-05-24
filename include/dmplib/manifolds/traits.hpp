@@ -6,7 +6,7 @@
 namespace dmp {
 
 template <typename T>
-struct HasCustomConstructor {
+struct has_custom_constructor {
 private:
     template <typename U>
     static auto test(int)
@@ -21,7 +21,7 @@ public:
 };
 
 template <typename T>
-static constexpr bool has_custom_constructor_v = HasCustomConstructor<T>::value;
+static constexpr bool has_custom_constructor_v = has_custom_constructor<T>::value;
 
 }  // namespace dmp
 

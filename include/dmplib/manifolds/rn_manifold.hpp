@@ -8,7 +8,7 @@ namespace dmp {
 // Manifold of a Rn space
 template <int N>
 class RnManifold
-        : public RiemannManifold<RnManifold<N>, Eigen::Matrix<double, N, 1>, N> {
+        : public RiemannManifold<RnManifold<N>, Eigen::Matrix<double, N, 1>> {
 public:
     using Vec_t = Eigen::Matrix<double, N, 1>;
 

@@ -3,6 +3,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include "dmplib/manifolds/domains/se3.hpp"
 #include "dmplib/manifolds/rn_manifold.hpp"
 #include "dmplib/manifolds/s3_manifold.hpp"
 
