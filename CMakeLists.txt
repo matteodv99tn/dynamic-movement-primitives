@@ -47,6 +47,7 @@ add_library(dmp STATIC
     src/coordinate_systems/exponential_decay_cs.cpp
     src/basis_functions/gaussian_bf.cpp
     src/basis_functions/radial_gaussian_bf.cpp
+    src/data_handler/conversions.cpp
     #    src/data_container/timeseries.cpp
     #    src/manifold_traits/s3_manifold.cpp
     )

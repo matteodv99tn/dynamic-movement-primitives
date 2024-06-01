@@ -26,8 +26,8 @@ namespace rs     = ::ranges;
 namespace rv     = ::ranges::views;
 namespace traits = ::dmp::type_traits;
 
-template <typename Dest, typename Source>
-inline Dest deserialise(const Source& data);
+// template <typename Dest, typename Source>
+// inline Dest deserialise(const Source& data);
 
 template <typename Dest, typename Source>
 inline std::enable_if_t<std::is_same_v<Dest, Eigen::Quaterniond>, Eigen::Quaterniond>
@@ -39,7 +39,7 @@ deserialise(const Source& data) {
     rs::copy(data | rv::take_exactly(4), q.coeffs().data());
 #endif
     q.normalize();
-    return std::move(q);
+    return q;
 }
 
 template <typename Dest, typename Source>
@@ -48,9 +48,9 @@ deserialise(const Source& data) {
     Dest res;
     static_assert(Dest::RowsAtCompileTime != Eigen::Dynamic);
 #ifdef NDEBUG
-    rs::copy(data | rv::take(Dest::RowsAtCompileTime), res);
+    rs::copy(data | rv::take(internal::serialised_dimension<Dest>::value), res);
 #else
-    rs::copy(data | rv::take_exactly(Dest::RowsAtCompileTime), res);
+    rs::copy(data | rv::take_exactly(internal::serialised_dimension<Dest>::value), res.data());
 #endif
     return res;
 }
@@ -70,7 +70,7 @@ namespace internal {
     template <typename Tuple, std::size_t... Idxs>
     constexpr std::size_t
     accumulate_prior_type_size(std::index_sequence<Idxs...> /*unused*/) {
-        return (serialised_dimension<std::tuple_element_t<Idxs, Tuple>>() + ... + 0);
+        return (serialised_dimension<std::tuple_element_t<Idxs, Tuple>>::value + ... + 0);
     }
 
     template <typename Tuple, std::size_t Id>
@@ -85,7 +85,7 @@ namespace internal {
     deserialise_tuple_element(const Source& data) {
         return deserialise_from<
                 std::tuple_element_t<Id, Tuple>,
-                prior_types_size<Tuple, Id>>(data);
+                prior_types_size<Tuple, Id>()>(data);
     }
 
     template <typename Tuple, typename Source, std::size_t... Idxs>
@@ -115,11 +115,10 @@ namespace internal {
 }  // namespace internal
 
 template <typename Dest, typename Source>
-std::enable_if_t<traits::is_std_vector_t<Dest>::value, Dest>
+std::enable_if_t<traits::is_std_vector<Dest>::value, Dest>
 deserialise(const std::vector<Source>& data) {
-    return internal::deserialise_vector<traits::contained_type<Dest>::type>(data);
+    return internal::deserialise_vector<traits::is_std_vector<Dest>::type>(data);
 }
-
 
 }  // namespace dmp::ranges
 
