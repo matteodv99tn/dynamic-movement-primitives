@@ -84,9 +84,24 @@ namespace internal {
 
 template <typename T>
 T
+vector(const std::vector<double>& data) {
+    return ranges::deserialise<T>(data);
+}
+
+template <typename T>
+std::vector<T>
+vector(const std::vector<std::vector<double>>& data) {
+    return data | rv::transform([](const auto& row) -> T {
+               return ::dmp::to::vector<T>(row);
+           })
+           | rs::to_vector;
+}
+
+template <typename T>
+T
 string(const std::string& content) {
     const std::vector<double> data = internal::string_to_vec(content);
-    return ranges::deserialise<T>(data);
+    return ::dmp::from::vector<T>(data);
 }
 
 template <typename T>
@@ -99,11 +114,11 @@ string(const std::vector<std::string>& content) {
 template <typename T>
 std::vector<T>
 file(const std::string& file_name) {
-    std::ifstream file_stream(file_name);
-    std::string line;
+    std::ifstream  file_stream(file_name);
+    std::string    line;
     std::vector<T> res;
 
-    while(std::getline(file_stream, line)) {
+    while (std::getline(file_stream, line)) {
         res.push_back(std::move(string<T>(line)));
     }
     return res;

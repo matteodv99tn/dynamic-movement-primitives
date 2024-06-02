@@ -8,9 +8,6 @@
 #include "range/v3/view/split.hpp"
 #include "range/v3/view/transform.hpp"
 
-namespace rs = ranges;
-namespace rv = ranges::views;
-
 void
 dmp::to::internal::close_file(std::FILE* f) {
     std::fclose(f);  // NOLINT
