@@ -21,15 +21,12 @@ public:
     using Forcing_t = typename M::Tangent_t;
 
 protected:
-    Manifold _M; // NOLINT
-                 //
+    Manifold         _M;  // NOLINT
     Forcing_t        _f;
-    ConstdoubleRef_t _T; // NOLINT
+    ConstdoubleRef_t _T;  // NOLINT
 
     Domain_t _y;  //< "position" state
     Domain_t _g;  //< goal
-
-
 
 public:
     TransformationSystem(const ConstdoubleRef_t& T) :

@@ -3,7 +3,6 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <Eigen/src/Core/Matrix.h>
 
 #include "dmplib/manifolds/riemann_manifolds.hpp"
 #include "dmplib/manifolds/rn_manifold.hpp"
