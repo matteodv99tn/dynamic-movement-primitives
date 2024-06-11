@@ -27,6 +27,11 @@ protected:
     // CRTP traits definition
     friend class Integrable<ExponentialDecayCs>;
     void step_impl();
+
+    friend class CoordinateSystem<ExponentialDecayCs, POINT_TO_POINT>;
+    [[nodiscard]] std::vector<double> distribution_on_support_impl(
+            const std::size_t& size
+    ) const;
 };
 
 }  // namespace dmp
