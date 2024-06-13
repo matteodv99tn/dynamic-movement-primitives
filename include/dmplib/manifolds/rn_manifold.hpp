@@ -1,35 +1,29 @@
 #ifndef DMP_RN_MANIFOLD_HPP
 #define DMP_RN_MANIFOLD_HPP
 
-#include "dmplib/manifolds/riemann_manifolds.hpp"
 
-namespace dmp {
+#include "dmplib/manifolds/aliases.hpp"
+#include "dmplib/manifolds/riemann_manifold.hpp"
 
-// Manifold of a Rn space
+namespace dmp::riemannmanifold {
+
 template <int N>
-class RnManifold
-        : public RiemannManifold<RnManifold<N>, Eigen::Matrix<double, N, 1>> {
-public:
-    using Vec_t = Eigen::Matrix<double, N, 1>;
-
-    [[nodiscard]] inline Vec_t
-    construct_domain_impl() const {
-        return Vec_t::Zero();
-    }
-
-    [[nodiscard]] Vec_t
-    logarithmic_map_impl(const Vec_t& p, const Vec_t& x) const {
-        return (x - p);
-    }
-
-    [[nodiscard]] Vec_t
-    exponential_map_impl(const Vec_t& p, const Vec_t& v) const {
-        return p + v;
-    }
+struct tangent_space_dimension<Vec_t<N>> {
+    static constexpr int value = N;
 };
 
-class R3Manifold : public RnManifold<3> {};
+template <int N>
+Vec_t<N>
+logarithmic_map(const Vec_t<N>& p1, const Vec_t<N>& p2) {
+    return p2 - p1;
+}
 
-}  // namespace dmp
+template <int N>
+Vec_t<N>
+exponential_map(const Vec_t<N>& p, const Vec_t<N>& v) {
+    return p + v;
+}
+
+}  // namespace dmp::riemannmanifold
 
 #endif  // DMP_RN_MANIFOLD_HPP

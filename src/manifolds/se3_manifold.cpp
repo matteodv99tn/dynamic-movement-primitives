@@ -2,30 +2,30 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <Eigen/src/Geometry/Quaternion.h>
 
-#include "dmplib/manifolds/domains/se3.hpp"
 #include "dmplib/manifolds/rn_manifold.hpp"
 #include "dmplib/manifolds/s3_manifold.hpp"
 
-using dmp::SE3Manifold;
+using namespace dmp::riemannmanifold;
 
-using dmp::SE3;  // domain
-using Vec6_t = dmp::SE3Manifold::Tangent_t;
-
-SE3::SE3(Eigen::Vector3d position, Eigen::Quaterniond orientation) :
-        p(std::move(position)), q(std::move(orientation)) {
+SE3::SE3() : pos(Vec3_t::Zero()), ori(Quaternion_t::Identity()) {
 }
 
 Vec6_t
-SE3Manifold::logarithmic_map_impl(const SE3& p, const SE3& x) const {
+logarithmic_map(const SE3& p, const SE3& x) {
     Vec6_t res;
-    res.head<3>() = _r3_manifold.logarithmic_map(p.p, x.p);
-    res.tail<3>() = _s3_manifold.logarithmic_map(p.q, x.q);
+    res.head<3>() = logarithmic_map(p.pos, x.pos);
+    res.tail<3>() = logarithmic_map(p.ori, x.ori);
     return res;
 }
 
 SE3
-SE3Manifold::exponential_map_impl(const SE3& p, const Vec6_t& v) const {
-    return {_r3_manifold.exponential_map(p.p, v.head<3>()),
-            _s3_manifold.exponential_map(p.q, v.tail<3>())};
+exponential_map(const SE3& p, const Vec6_t& v) {
+    SE3 res;
+    Vec3_t pos_part = v.head<3>();
+    Vec3_t ori_part = v.tail<3>();
+    res.pos = exponential_map(p.pos, pos_part);
+    res.ori = exponential_map(p.ori, ori_part);
+    return res;
 }
