@@ -50,9 +50,18 @@ deserialise(const Source& data) {
 #ifdef NDEBUG
     rs::copy(data | rv::take(internal::serialised_dimension<Dest>::value), res);
 #else
-    rs::copy(data | rv::take_exactly(internal::serialised_dimension<Dest>::value), res.data());
+    rs::copy(
+            data | rv::take_exactly(internal::serialised_dimension<Dest>::value),
+            res.data()
+    );
 #endif
     return res;
+}
+
+template <typename Dest, typename Source>
+inline std::enable_if_t<std::is_same_v<Dest, double>, double>
+deserialise(const Source& data) {
+    return data[0];
 }
 
 template <typename Dest, std::size_t From, typename Source>
@@ -70,7 +79,8 @@ namespace internal {
     template <typename Tuple, std::size_t... Idxs>
     constexpr std::size_t
     accumulate_prior_type_size(std::index_sequence<Idxs...> /*unused*/) {
-        return (serialised_dimension<std::tuple_element_t<Idxs, Tuple>>::value + ... + 0);
+        return (serialised_dimension<std::tuple_element_t<Idxs, Tuple>>::value + ... + 0
+        );
     }
 
     template <typename Tuple, std::size_t Id>

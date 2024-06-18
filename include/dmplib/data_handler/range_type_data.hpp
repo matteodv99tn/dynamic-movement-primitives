@@ -11,6 +11,11 @@ template <typename T>
 struct serialised_dimension;
 
 template <>
+struct serialised_dimension<double> {
+    static constexpr int value = 1;
+};
+
+template <>
 struct serialised_dimension<Eigen::Quaterniond> {
     static constexpr int value = 4;
 };

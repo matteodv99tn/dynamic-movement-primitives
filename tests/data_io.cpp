@@ -7,8 +7,10 @@
 #include <vector>
 
 #include "dmplib/data_handler/conversions.hpp"
-#include "range/v3/view/zip.hpp"
+#include "dmplib/manifolds/aliases.hpp"
 #include "range/v3/range/conversion.hpp"
+#include "range/v3/view/enumerate.hpp"
+#include "range/v3/view/zip.hpp"
 
 namespace rs = ranges;
 namespace rv = ranges::views;
@@ -75,8 +77,27 @@ main() {
     const Trajectory_t loaded_traj = dmp::from::file<Tpl_t>("data_io_test.csv");
     // Parses each line of the file as of type "Tpl_t", thus creating a
     // std::vector<Tpl_t> = Trajectory_t
-    
+
     fmt::println("Loaded data:");
     const auto retrieved_lines = dmp::to::string(loaded_traj);
-    for (const auto& line: retrieved_lines) fmt::println("{}", line);
+    for (const auto& line : retrieved_lines) fmt::println("{}", line);
+
+
+    // --- TimeStamped trajectory
+    using StampedTraj_t        = dmp::StampedPosTrajectory_t<Eigen::Quaterniond>;
+    const StampedTraj_t traj2  = rv::enumerate(quaternions) | rs::to<StampedTraj_t>;
+    const auto          lines2 = dmp::to::string(traj2);
+    fmt::println("Stamped trajectory:");
+    for (const auto& line : lines2) fmt::println("{}", line);
+
+    fmt::println("Writing stamped trajectory to 'data_io_test2.csv'");
+    dmp::to::file("data_io_test2.csv", traj2);
+
+    fmt::println("Loading stamped trajectory from 'data_io_test2.csv'");
+    const auto loaded_traj2 = dmp::from::file<dmp::StampedPosSample_t<Eigen::Quaterniond>>("data_io_test2.csv");
+
+    fmt::println("Loaded data:");
+    const auto retrieved_lines2 = dmp::to::string(loaded_traj);
+    for (const auto& line : retrieved_lines2) fmt::println("{}", line);
+
 }

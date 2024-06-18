@@ -10,6 +10,7 @@
 #include "range/v3/view/all.hpp"
 #include "range/v3/view/concat.hpp"
 #include "range/v3/view/ref.hpp"
+#include "range/v3/view/single.hpp"
 #include "range/v3/view/transform.hpp"
 
 namespace dmp::ranges {
@@ -21,6 +22,11 @@ namespace rv = ::ranges::views;
 // If no specific definition is reported here, an automatic serialisation is attempted.
 template <typename T>
 inline auto serialise(const T& obj);
+
+template <>
+inline auto serialise<double>(const double& obj) {
+    return rv::single(obj);
+}
 
 template <>
 inline auto
