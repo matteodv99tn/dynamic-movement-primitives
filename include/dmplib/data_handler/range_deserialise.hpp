@@ -48,7 +48,7 @@ deserialise(const Source& data) {
     Dest res;
     static_assert(Dest::RowsAtCompileTime != Eigen::Dynamic);
 #ifdef NDEBUG
-    rs::copy(data | rv::take(internal::serialised_dimension<Dest>::value), res);
+    rs::copy(data | rv::take(internal::serialised_dimension<Dest>::value), res.data());
 #else
     rs::copy(
             data | rv::take_exactly(internal::serialised_dimension<Dest>::value),
