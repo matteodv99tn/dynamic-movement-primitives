@@ -68,7 +68,7 @@ file(const std::string& file_name, const std::vector<T>& objs) {
     if (!output_file) return;
 
     const std::vector<std::string> lines = string(objs);
-    for (const auto& l : lines) fmt::println(output_file.get(), "{}", l);
+    for (const auto& l : lines) fmt::print(output_file.get(), "{}", l);
 }
 
 }  // namespace dmp::to
