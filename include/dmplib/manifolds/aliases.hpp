@@ -1,6 +1,7 @@
 #ifndef DMPLIB_RIEMANN_MANIFOLD_ALIASES_HPP
 #define DMPLIB_RIEMANN_MANIFOLD_ALIASES_HPP
 
+#include <cstdint>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <tuple>
@@ -22,6 +23,9 @@ using Quaternion_t = Eigen::Quaterniond;
 
 namespace dmp {
 
+
+using TimeStamp_t = std::uint64_t;  // POSIX time representation
+
 template <typename T>
 using PosVelSample_t = std::tuple<T, riemannmanifold::tangent_space_t<T>>;
 
@@ -32,15 +36,15 @@ using PosVelAccSample_t = std::tuple<
         riemannmanifold::tangent_space_t<T>>;
 
 template <typename T>
-using StampedPosSample_t = std::tuple<double, T>;
+using StampedPosSample_t = std::tuple<TimeStamp_t, T>;
 
 template <typename T>
 using StampedPosVelSample_t =
-        std::tuple<double, T, riemannmanifold::tangent_space_t<T>>;
+        std::tuple<TimeStamp_t, T, riemannmanifold::tangent_space_t<T>>;
 
 template <typename T>
 using StampedPosVelAccSample_t = std::tuple<
-        double,
+        TimeStamp_t,
         T,
         riemannmanifold::tangent_space_t<T>,
         riemannmanifold::tangent_space_t<T>>;
