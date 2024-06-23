@@ -22,28 +22,10 @@ namespace rs = ::ranges;
 namespace rv = ::ranges::views;
 
 template <typename T>
-std::vector<double>
-vector(const T& obj) {
-    static_assert(
-            rs::range<decltype(dmp::ranges::serialise(obj))>,
-            "Call to dmp::ranges::serialise<T> does not provide a valid range"
-    );
-    return dmp::ranges::serialise(obj) | rs::to<std::vector<double>>;
-}
-
-template <typename T>
-std::vector<std::vector<double>>
-vector(const std::vector<T>& objs) {
-    return objs | rv::transform([](const auto& obj) { return vector(obj); })
-           | rs::to<std::vector<std::vector<double>>>;
-}
-
-template <typename T>
 std::string
 string(const T& obj) {
-    return ranges::serialise(obj)
-           | rv::transform([](const auto& elem) { return std::to_string(elem); })
-           | rv::intersperse(", ") | rv::join | rs::to<std::string>;
+    const ranges::StrVec_t serialised = ranges::serialise(obj);
+    return serialised | rv::intersperse(", ") | rv::join | rs::to<std::string>;
 }
 
 template <typename T>
@@ -68,7 +50,7 @@ file(const std::string& file_name, const std::vector<T>& objs) {
     if (!output_file) return;
 
     const std::vector<std::string> lines = string(objs);
-    for (const auto& l : lines) fmt::print(output_file.get(), "{}", l);
+    for (const auto& l : lines) fmt::println(output_file.get(), "{}", l);
 }
 
 }  // namespace dmp::to
@@ -79,29 +61,14 @@ namespace rs = ::ranges;
 namespace rv = ::ranges::views;
 
 namespace internal {
-    std::vector<double> string_to_vec(const std::string& str);
-}
-
-template <typename T>
-T
-vector(const std::vector<double>& data) {
-    return ranges::deserialise<T>(data);
-}
-
-template <typename T>
-std::vector<T>
-vector(const std::vector<std::vector<double>>& data) {
-    return data | rv::transform([](const auto& row) -> T {
-               return ::dmp::to::vector<T>(row);
-           })
-           | rs::to_vector;
+    std::vector<std::string> string_to_vec(const std::string& str);
 }
 
 template <typename T>
 T
 string(const std::string& content) {
-    const std::vector<double> data = internal::string_to_vec(content);
-    return ::dmp::from::vector<T>(data);
+    const std::vector<std::string> data = internal::string_to_vec(content);
+    return ::dmp::ranges::deserialise<T>(data);
 }
 
 template <typename T>
@@ -118,9 +85,7 @@ file(const std::string& file_name) {
     std::string    line;
     std::vector<T> res;
 
-    while (std::getline(file_stream, line)) {
-        res.push_back(std::move(string<T>(line)));
-    }
+    while (std::getline(file_stream, line)) { res.push_back(string<T>(line)); }
     return res;
 }
 

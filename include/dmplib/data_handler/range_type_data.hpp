@@ -3,15 +3,16 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <tuple>
+
+#include "dmplib/data_handler/concepts.hpp"
 
 namespace dmp::ranges::internal {
 
 template <typename T>
 struct serialised_dimension;
 
-template <>
-struct serialised_dimension<double> {
+template <::dmp::ranges::concepts::numeric T>
+struct serialised_dimension<T> {
     static constexpr int value = 1;
 };
 

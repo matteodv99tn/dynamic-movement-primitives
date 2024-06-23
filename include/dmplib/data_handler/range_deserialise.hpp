@@ -2,6 +2,8 @@
 #define DMPLIB_RANGE_DESERIALISE_HPP
 
 #include <Eigen/Geometry>
+#include <concepts>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -20,48 +22,59 @@
 #include "range/v3/view/take_exactly.hpp"
 #endif
 
+#include "dmplib/data_handler/concepts.hpp"
+
 namespace dmp::ranges {
 
 namespace rs     = ::ranges;
 namespace rv     = ::ranges::views;
 namespace traits = ::dmp::type_traits;
 
+namespace internal {
+    template <int N, typename Source>
+    inline void
+    deserialise_as_double(const Source& data, double* output) {
+        auto to_double = [](const auto& str) -> double { return std::stod(str); };
+#ifdef NDEBUG
+        rs::copy(data | rv::transform(to_double) | rv::take(N), output);
+#else
+        rs::copy(data | rv::transform(to_double) | rv::take_exactly(N), output);
+
+#endif
+    }
+}  // namespace internal
+
 // template <typename Dest, typename Source>
 // inline Dest deserialise(const Source& data);
 
-template <typename Dest, typename Source>
-inline std::enable_if_t<std::is_same_v<Dest, Eigen::Quaterniond>, Eigen::Quaterniond>
+template <concepts::eigen_quaternion Dest, typename Source>
+[[nodiscard]] inline Dest
 deserialise(const Source& data) {
     Eigen::Quaterniond q;
-#ifdef NDEBUG
-    rs::copy(data | rv::take(4), q.coeffs().data());
-#else
-    rs::copy(data | rv::take_exactly(4), q.coeffs().data());
-#endif
+    internal::deserialise_as_double<4>(data, q.coeffs().data());
     q.normalize();
     return q;
 }
 
-template <typename Dest, typename Source>
-inline std::enable_if_t<traits::is_eigen_vector<Dest>::value, Dest>
+template <concepts::eigen_vector Dest, typename Source>
+[[nodiscard]] inline Dest
 deserialise(const Source& data) {
-    Dest res;
     static_assert(Dest::RowsAtCompileTime != Eigen::Dynamic);
-#ifdef NDEBUG
-    rs::copy(data | rv::take(internal::serialised_dimension<Dest>::value), res.data());
-#else
-    rs::copy(
-            data | rv::take_exactly(internal::serialised_dimension<Dest>::value),
-            res.data()
-    );
-#endif
-    return res;
+    Dest vec;
+    internal::deserialise_as_double<Dest::RowsAtCompileTime>(data, vec.data());
+    return vec;
 }
 
-template <typename Dest, typename Source>
-inline std::enable_if_t<std::is_same_v<Dest, double>, double>
+template <std::floating_point Dest, typename Source>
+[[nodiscard]] inline Dest
 deserialise(const Source& data) {
-    return data[0];
+    return std::stod(data[0]);
+}
+
+template <std::integral Dest, typename Source>
+[[nodiscard]] inline Dest
+deserialise(const Source& data) {
+    return std::stoi(data[0]);
 }
 
 template <typename Dest, std::size_t From, typename Source>
@@ -79,7 +92,8 @@ namespace internal {
     template <typename Tuple, std::size_t... Idxs>
     constexpr std::size_t
     accumulate_prior_type_size(std::index_sequence<Idxs...> /*unused*/) {
-        return (serialised_dimension<std::tuple_element_t<Idxs, Tuple>>::value + ... + 0
+        return (serialised_dimension<std::tuple_element_t<Idxs, Tuple>>::value + ...
+        + 0
         );
     }
 
