@@ -15,18 +15,6 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-if(DMPLIB_RUN_CLANG_TIDY)
-    find_program(CLANGTIDY clang-tidy)
-    set(CMAKE_CXX_CLANG_TIDY
-        clang-tidy --config-file=${CMAKE_CURRENT_LIST_DIR}/.clang-tidy
-        )
-    if(CLANGTIDY)
-        message(STATUS "Running clang-tidy on each project source")
-    else()
-        message(WARNING "Unable to find clang-tidy; can't perform static analysis")
-    endif()
-endif()
-
 find_package(Eigen3 REQUIRED)
 
 include(FetchContent)
@@ -39,6 +27,44 @@ FetchContent_Declare(
     URL https://github.com/fmtlib/fmt/archive/refs/tags/10.2.1.zip
 )
 FetchContent_MakeAvailable(range-v3 fmt)
+
+# Matplotlib interface
+add_library(matplotlib_cpp INTERFACE)
+find_package(Python3 COMPONENTS Interpreter Development)
+if(${Python3_FOUND})
+    target_link_libraries(
+        matplotlib_cpp 
+        INTERFACE
+        Python3::Python
+        Python3::Module
+    )
+    message(STATUS "Python3 found, matplotlib_cpp will be available")
+    target_include_directories(matplotlib_cpp INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/external_includes)
+    target_compile_definitions(matplotlib_cpp INTERFACE WITHOUT_NUMPY MATPLOTLIBAVAILABLE)
+
+    set(MATPLOTLIB_H_DOWNLOAD_PATH ${CMAKE_CURRENT_BINARY_DIR}/external_includes/matplotlibcpp.h)
+    if (NOT EXISTS "${MATPLOTLIB_H_DOWNLOAD_PATH}")
+        message(STATUS "Downloading matplotlib_cpp header")
+        file(DOWNLOAD "https://raw.githubusercontent.com/lava/matplotlib-cpp/master/matplotlibcpp.h" "${MATPLOTLIB_H_DOWNLOAD_PATH}")
+    endif()
+else()
+    message(WARNING "Python3 not found, so won't be able to use matplotlib_cpp")
+endif()
+
+if(DMPLIB_RUN_CLANG_TIDY)
+    find_program(CLANGTIDY clang-tidy)
+    set(CMAKE_CXX_CLANG_TIDY
+        clang-tidy --config-file=${CMAKE_CURRENT_LIST_DIR}/.clang-tidy
+        )
+    if(CLANGTIDY)
+        message(STATUS "Running clang-tidy on each project source")
+    else()
+        message(WARNING "Unable to find clang-tidy; can't perform static analysis")
+    endif()
+else()
+    message(STATUS "Skipping clang-tidy")
+endif()
+
 
 add_library(
     ${PROJECT_NAME}
@@ -57,6 +83,7 @@ target_link_libraries(
     Eigen3::Eigen 
     range-v3 
     fmt::fmt
+    matplotlib_cpp
 )
 target_include_directories(
     ${PROJECT_NAME}
