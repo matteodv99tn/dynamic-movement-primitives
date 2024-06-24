@@ -24,8 +24,8 @@ logarithmic_map(const SE3& p, const SE3& x) {
 SE3
 exponential_map(const SE3& p, const Vec6_t& v) {
     SE3    res;
-    Vec3_t pos_part = v.head<3>();
-    Vec3_t ori_part = v.tail<3>();
+    const Vec3_t pos_part = v.head<3>();
+    const Vec3_t ori_part = v.tail<3>();
     res.pos         = exponential_map(p.pos, pos_part);
     res.ori         = exponential_map(p.ori, ori_part);
     return res;

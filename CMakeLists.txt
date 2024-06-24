@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 
 set(DMPLIB_BUILD_TESTS ON CACHE BOOL "Build tests")
-set(DMPLIB_RUN_CLANG_TIDY ON CACHE BOOL "Automatically run clang-tidy on each source code")
+set(DMPLIB_RUN_CLANG_TIDY OFF CACHE BOOL "Automatically run clang-tidy on each source code")
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
