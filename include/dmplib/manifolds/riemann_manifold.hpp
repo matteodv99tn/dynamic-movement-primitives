@@ -17,7 +17,7 @@ struct tangent_space {
 };
 
 template <typename T>
-using tangent_space_t = tangent_space<T>::type;  // NOLINT
+using tangent_space_t = typename tangent_space<T>::type;  // NOLINT
 
 }  // namespace dmp::riemannmanifold
 

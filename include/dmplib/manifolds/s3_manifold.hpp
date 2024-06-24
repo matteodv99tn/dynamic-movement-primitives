@@ -15,8 +15,8 @@ struct tangent_space_dimension<Quaternion_t> {
 
 Vec3_t       logarithmic_map(const Quaternion_t& q1, const Quaternion_t& q2);
 Vec3_t       logarithmic_map_single(Quaternion_t q);
-Quaternion_t exponential_map(const Vec3_t& v);
 Quaternion_t exponential_map(const Quaternion_t& q, const Vec3_t& v);
+Quaternion_t exponential_map_single(const Vec3_t& v);
 
 }  // namespace dmp::riemannmanifold
 

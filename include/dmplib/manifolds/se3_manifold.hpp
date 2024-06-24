@@ -13,7 +13,8 @@ struct SE3 {  // NOLINT: naming convention
     Vec3_t       pos;
     Quaternion_t ori;
 
-    SE3();
+    SE3(Vec3_t       position    = Vec3_t::Zero(),
+        Quaternion_t orientation = Quaternion_t::Identity());
 };
 
 template <>

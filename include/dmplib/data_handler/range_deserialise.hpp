@@ -1,8 +1,8 @@
 #ifndef DMPLIB_RANGE_DESERIALISE_HPP
 #define DMPLIB_RANGE_DESERIALISE_HPP
 
-#include <Eigen/Geometry>
 #include <concepts>
+#include <Eigen/Geometry>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -10,6 +10,8 @@
 
 #include "dmplib/data_handler/range_type_data.hpp"
 #include "dmplib/data_handler/traits.hpp"
+#include "dmplib/manifolds/aliases.hpp"
+#include "dmplib/manifolds/se3_manifold.hpp"
 #include "range/v3/algorithm/copy.hpp"
 #include "range/v3/range/conversion.hpp"
 #include "range/v3/view/transform.hpp"
@@ -87,13 +89,22 @@ deserialise_from(const Source& data) {
 #endif
 }
 
+template <typename T, typename Source>
+[[nodiscard]] inline std::
+        enable_if_t<std::is_same_v<T, riemannmanifold::SE3>, riemannmanifold::SE3>
+        deserialise(const Source& data) {
+    riemannmanifold::SE3 obj;
+    obj.pos = deserialise<decltype(obj.pos)>(data);
+    obj.ori = deserialise_from<riemannmanifold::Quaternion_t, 3>(data);
+    return obj;
+}
+
 namespace internal {
 
     template <typename Tuple, std::size_t... Idxs>
     constexpr std::size_t
     accumulate_prior_type_size(std::index_sequence<Idxs...> /*unused*/) {
-        return (serialised_dimension<std::tuple_element_t<Idxs, Tuple>>::value + ...
-        + 0
+        return (serialised_dimension<std::tuple_element_t<Idxs, Tuple>>::value + ... + 0
         );
     }
 

@@ -3,14 +3,15 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/src/Geometry/Quaternion.h>
+#include <utility>
 
 #include "dmplib/manifolds/rn_manifold.hpp"
 #include "dmplib/manifolds/s3_manifold.hpp"
 
 using namespace dmp::riemannmanifold;
 
-SE3::SE3() : pos(Vec3_t::Zero()), ori(Quaternion_t::Identity()) {
-}
+SE3::SE3(Vec3_t position, Quaternion_t orientation) :
+        pos(std::move(position)), ori(std::move(orientation)){};
 
 Vec6_t
 logarithmic_map(const SE3& p, const SE3& x) {
@@ -22,10 +23,10 @@ logarithmic_map(const SE3& p, const SE3& x) {
 
 SE3
 exponential_map(const SE3& p, const Vec6_t& v) {
-    SE3 res;
+    SE3    res;
     Vec3_t pos_part = v.head<3>();
     Vec3_t ori_part = v.tail<3>();
-    res.pos = exponential_map(p.pos, pos_part);
-    res.ori = exponential_map(p.ori, ori_part);
+    res.pos         = exponential_map(p.pos, pos_part);
+    res.ori         = exponential_map(p.ori, ori_part);
     return res;
 }

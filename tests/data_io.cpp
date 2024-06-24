@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "dmplib/manifolds/se3_manifold.hpp"
 #include "fmt/format.h"
 #include "fmt/ostream.h"
 #include "range/v3/algorithm/copy.hpp"
@@ -120,9 +121,25 @@ main() {
 
     fmt::println("Loading stamped trajectory from 'data_io_test2.csv'");
     const auto loaded_traj2 =
-    dmp::from::file<dmp::StampedPosSample_t<Eigen::Quaterniond>>("data_io_test2.csv");
+            dmp::from::file<dmp::StampedPosSample_t<Eigen::Quaterniond>>(
+                    "data_io_test2.csv"
+            );
 
     fmt::println("Loaded data:");
     const auto retrieved_lines2 = dmp::to::string(loaded_traj2);
     for (const auto& line : retrieved_lines2) fmt::println("{}", line);
+
+    // --- Pose trajectories
+    using PoseTraj_t = dmp::PosTrajectory_t<dmp::riemannmanifold::SE3>;
+
+    PoseTraj_t traj3;
+    for (std::size_t i = 0; i < n_samples; i++)
+        traj3.emplace_back(velocities[i], quaternions[i]);
+
+    fmt::println("Writing stamped trajectory to 'data_io_test3.csv'");
+    dmp::to::file("data_io_test3.csv", traj3);
+
+    fmt::println("Loading stamped trajectory from 'data_io_test3.csv'");
+    const auto loaded_traj3 =
+            dmp::from::file<dmp::riemannmanifold::SE3>("data_io_test3.csv");
 }

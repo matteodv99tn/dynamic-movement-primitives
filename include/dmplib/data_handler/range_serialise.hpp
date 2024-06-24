@@ -8,10 +8,12 @@
 #include <vector>
 
 #include "dmplib/data_handler/concepts.hpp"
+#include "dmplib/manifolds/se3_manifold.hpp"
 #include "range/v3/iterator/concepts.hpp"
 #include "range/v3/range/concepts.hpp"
 #include "range/v3/range/conversion.hpp"
 #include "range/v3/view/join.hpp"
+#include "range/v3/view/concat.hpp"
 #include "range/v3/view/transform.hpp"
 
 namespace dmp::ranges {
@@ -49,12 +51,6 @@ serialise(const T& obj) {
     return {std::to_string(obj)};
 }
 
-template <>
-inline StrVec_t
-serialise<Eigen::Quaterniond>(const Eigen::Quaterniond& obj) {
-    return internal::serialise_iterable(obj.coeffs());
-}
-
 template <::ranges::forward_iterator T>
 [[nodiscard]] inline StrVec_t
 serialise(const T& obj) {
@@ -66,6 +62,21 @@ template <concepts::eigen_vector T>
 serialise(const T& obj) {
     return internal::serialise_iterable(obj);
 }
+
+template <>
+inline StrVec_t
+serialise<Eigen::Quaterniond>(const Eigen::Quaterniond& obj) {
+    return internal::serialise_iterable(obj.coeffs());
+}
+
+template <>
+inline StrVec_t
+serialise<riemannmanifold::SE3>(const riemannmanifold::SE3& obj){
+    const auto pos_ser = serialise(obj.pos);
+    const auto ori_ser = serialise(obj.ori);
+    return rv::concat(pos_ser, ori_ser) | rs::to<StrVec_t>;
+}
+
 
 namespace internal {
 
