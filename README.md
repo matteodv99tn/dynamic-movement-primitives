@@ -12,19 +12,27 @@ Injected data structures are:
 
 
 ## Implementation requirements
-### Manifolds
+### Manifold operations
 
-Each manifold class must implement the following concepts:
+To deal with manifold, we use a functional approach. 
+For each type we want to create a manifold, it is recommended to create a separate header file:
 
-- having a `using` statements `Domain_t, Tangent_t` to represent types to describe both domain and tangent space;
-- two functions `construct_domain(), construct_tangent()` for default initialisation of domains and tangent space objects.
-- two function for the computation of the logarithmic and exponential map operators with the following signatures:
-  ``` cpp
-  Tangent_t logarithmic_map(const Domain_t& p, const Domain_t& x) const;
-  Domain_t exponential_map(const Domain_t& p, const Tangent_t& x) const;
-  ```
-
-To easen development, one can use the [`RiemannManifold`](include/dmplib/manifolds/riemann_manifolds.hpp) class in a [Curiously Recurring Template Pattern](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) (CRTP) to easen development.
+- including the ``dmplib/manifolds/riemann_manifold.hpp`` header file
+- this lines must be put inside the ``dmp::riemannmanifold`` namespace:
+  - the expression
+    ```cpp
+    template <>
+    struct tangent_space_dimension<Quaternion> { // < change quaternion
+        static constexpr int value = 3; // < change this
+    };
+    ```
+    This enables to use the ``dmp::riemannmanifold::tangent_space<>`` trait to query the proper tangent space object (i.e., an Eigen vector of according size);
+  - two functions with the signature like
+    ``` cpp
+    Tangent_t logarithmic_map(const Domain_t& p, const Domain_t& x) const;
+    Domain_t exponential_map(const Domain_t& p, const Tangent_t& x) const;
+    ```
+    In both signatures, the first argument is the point in the domain w.r.t. which the tangent space is constructed, while the second argument is respectively the point to be projected in the tangent space (for the logarithmic map) and the direction to move on the tangent space (for the exponential map).
 
 
 ## Implementation notes and code structure
@@ -36,7 +44,7 @@ $$
         \tau \dot z &= \alpha_z \big(\beta_z (g-y) - z\big) + f(x) \\
         \tau \dot y &= z \\
     \end{aligned}
-    \quad \right\} && \textrm{: transformation system} \\
+    \quad \right\\} && \textrm{: transformation system} \\
     & \tau \dot x = \alpha_x x && \textrm{: canonical system}
 \end{aligned}
 $$
