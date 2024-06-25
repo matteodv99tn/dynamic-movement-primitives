@@ -19,8 +19,8 @@ concept with_logarithmic_map = requires(T p1, T p2) {
 };
 
 
-// template <typename T>
-// concept riemann_manifold = with_tangent_type<T> && with_logarithmic_map<T>;
+template <typename T>
+concept riemann_manifold = with_tangent_type<T> && with_logarithmic_map<T>;
 
 
 }  // namespace dmp::riemannmanifold::concepts
