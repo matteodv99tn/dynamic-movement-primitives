@@ -5,6 +5,7 @@
 #include <Eigen/Geometry>
 
 #include "dmplib/data_handler/concepts.hpp"
+#include "dmplib/manifolds/se3_manifold.hpp"
 
 namespace dmp::ranges::internal {
 
@@ -24,6 +25,11 @@ struct serialised_dimension<Eigen::Quaterniond> {
 template <int N>
 struct serialised_dimension<Eigen::Matrix<double, N, 1>> {
     static constexpr int value = N;
+};
+
+template<>
+struct serialised_dimension<::dmp::riemannmanifold::SE3>{
+    static constexpr int value = 7;
 };
 
 

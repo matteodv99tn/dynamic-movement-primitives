@@ -79,6 +79,18 @@ deserialise(const Source& data) {
     return std::stoi(data[0]);
 }
 
+template <typename T, typename Source>
+[[nodiscard]] inline std::enable_if_t<
+        std::is_same_v<T, ::dmp::riemannmanifold::SE3>,
+        ::dmp::riemannmanifold::SE3>
+deserialise(const Source& data) {
+    riemannmanifold::SE3 obj;
+    obj.pos = deserialise<decltype(obj.pos)>(data);
+    obj.ori = deserialise_from<riemannmanifold::Quaternion_t, 3>(data);
+    return obj;
+}
+
+
 template <typename Dest, std::size_t From, typename Source>
 inline Dest
 deserialise_from(const Source& data) {
@@ -87,16 +99,6 @@ deserialise_from(const Source& data) {
 #else
     return deserialise<Dest>(data | rv::drop_exactly(From));
 #endif
-}
-
-template <typename T, typename Source>
-[[nodiscard]] inline std::
-        enable_if_t<std::is_same_v<T, riemannmanifold::SE3>, riemannmanifold::SE3>
-        deserialise(const Source& data) {
-    riemannmanifold::SE3 obj;
-    obj.pos = deserialise<decltype(obj.pos)>(data);
-    obj.ori = deserialise_from<riemannmanifold::Quaternion_t, 3>(data);
-    return obj;
 }
 
 namespace internal {
