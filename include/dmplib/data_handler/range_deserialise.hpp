@@ -76,20 +76,23 @@ deserialise(const Source& data) {
 template <std::integral Dest, typename Source>
 [[nodiscard]] inline Dest
 deserialise(const Source& data) {
-    return std::stoi(data[0]);
+    return std::stol(data[0]);
 }
 
 template <typename T, typename Source>
-[[nodiscard]] inline std::enable_if_t<
-        std::is_same_v<T, ::dmp::riemannmanifold::SE3>,
-        ::dmp::riemannmanifold::SE3>
-deserialise(const Source& data) {
+[[nodiscard]] inline T
+deserialise(const Source& data)
+    requires std::is_same_v<::dmp::riemannmanifold::SE3, T>
+{
     riemannmanifold::SE3 obj;
     obj.pos = deserialise<decltype(obj.pos)>(data);
-    obj.ori = deserialise_from<riemannmanifold::Quaternion_t, 3>(data);
+#ifdef NDEBUG
+    obj.ori = deserialise<riemannmanifold::Quaternion_t>(data | rv::drop(3));
+#else
+    obj.ori = deserialise<riemannmanifold::Quaternion_t>(data | rv::drop_exactly(3));
+#endif
     return obj;
 }
-
 
 template <typename Dest, std::size_t From, typename Source>
 inline Dest
@@ -134,8 +137,10 @@ namespace internal {
 }  // namespace internal
 
 template <typename Dest, typename Source>
-inline std::enable_if_t<traits::is_tuple<Dest>::value, Dest>
-deserialise(const Source& data) {
+inline Dest
+deserialise(const Source& data)
+    requires traits::is_tuple<Dest>::value
+{
     return internal::deserialise_tuple<Dest>(
             data, std::make_index_sequence<std::tuple_size_v<Dest>>()
     );
@@ -152,8 +157,10 @@ namespace internal {
 }  // namespace internal
 
 template <typename Dest, typename Source>
-std::enable_if_t<traits::is_std_vector<Dest>::value, Dest>
-deserialise(const std::vector<Source>& data) {
+Dest
+deserialise(const std::vector<Source>& data)
+    requires traits::is_std_vector<Dest>::value
+{
     return internal::deserialise_vector<traits::is_std_vector<Dest>::type>(data);
 }
 

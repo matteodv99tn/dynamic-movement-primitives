@@ -4,6 +4,7 @@
 #include <concepts>
 
 #include "dmplib/manifolds/riemann_manifold.hpp"
+#include "dmplib/manifolds/s3_manifold.hpp"
 
 namespace dmp::riemannmanifold::concepts {
 
@@ -18,9 +19,15 @@ concept with_logarithmic_map = requires(T p1, T p2) {
     { rm::logarithmic_map(p1, p2) } -> std::same_as<tangent_space_t<T>>;
 };
 
+template <typename T>
+concept with_exponential_map = requires(T p1, tangent_space_t<T> p2) {
+    { rm::exponential_map(p1, p2) } -> std::same_as<T>;
+};
+
 
 template <typename T>
-concept riemann_manifold = with_tangent_type<T> && with_logarithmic_map<T>;
+concept riemann_manifold =
+        with_tangent_type<T> && with_logarithmic_map<T> && with_exponential_map<T>;
 
 
 }  // namespace dmp::riemannmanifold::concepts

@@ -18,6 +18,14 @@ Vec3_t       logarithmic_map_single(Quaternion_t q);
 Quaternion_t exponential_map(const Quaternion_t& q, const Vec3_t& v);
 Quaternion_t exponential_map_single(const Vec3_t& v);
 
+template <typename T>
+constexpr T
+default_constructor()
+    requires std::is_same_v<Quaternion_t, T>
+{
+    return Quaternion_t::Identity();
+}
+
 }  // namespace dmp::riemannmanifold
 
 #endif  // DMPLIB_S3_MANIFOLD_HPP

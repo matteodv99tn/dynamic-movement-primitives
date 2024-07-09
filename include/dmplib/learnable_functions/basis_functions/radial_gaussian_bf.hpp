@@ -5,24 +5,19 @@
 
 #include "dmplib/learnable_functions/basis_functions/basis_function.hpp"
 
-namespace dmp {
+namespace dmp::learnablefunction {
 
 class RadialGaussianBf : public BasisFunction<RadialGaussianBf> {
 private:
-    std::vector<double> _c;
+    using Bf = BasisFunction<RadialGaussianBf>;  // NOLINT: type case
+    using Bf::_c;
     std::vector<double> _h;
 
 public:
     RadialGaussianBf(
-            const std::size_t& basis_size,
-            const double&      min_support = 0.0,
-            const double&      max_support = M_PI,
-            const bool&        include_ub  = false
+            const std::size_t& basis_size, const std::vector<double>& function_centers
+
     );
-
-    void set_c_coefficients(const std::vector<double>& c);
-
-    [[nodiscard]] std::vector<double> get_c_coefficients() const;
 
     void set_h_coefficients(const std::vector<double>& h);
 
@@ -32,8 +27,6 @@ public:
 protected:
     friend class BasisFunction<RadialGaussianBf>;
     Basis_t evaluate_impl(const double& arg);
-
-    void init_on_support(const bool& include_ub);
 };
 
 

@@ -10,7 +10,7 @@ namespace dmp {
 template <typename Derived>
 class Integrable {
 public:
-    Integrable(const double& dt = dmp::defaults::integration_period);
+    Integrable(const double& dt = dmp::defaults::integration_period) : _dt(dt) {};
 
     // This function requires the derived class to implement
     // void step_impl();
@@ -19,12 +19,12 @@ public:
         static_cast<Derived*>(this)->step_impl();
     }
 
-    [[nodiscard]] inline double
+    [[nodiscard]] double
     get_integration_period() const {
         return _dt;
     }
 
-    inline void
+    void
     set_integration_period(const double& dt) {
         _dt = dt;
     }

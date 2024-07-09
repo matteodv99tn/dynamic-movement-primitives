@@ -2,8 +2,7 @@
 #define DMP_RN_MANIFOLD_HPP
 
 
-#include "dmplib/manifolds/aliases.hpp"
-#include "dmplib/manifolds/riemann_manifold.hpp"
+#include "dmplib/manifolds/riemann_manifold.hpp" 
 
 namespace dmp::riemannmanifold {
 

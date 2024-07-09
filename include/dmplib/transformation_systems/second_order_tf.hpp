@@ -1,11 +1,114 @@
 #ifndef DMPLIB_SECOND_ORDER_TRANSFORMATION_SYSTEM_HPP
 #define DMPLIB_SECOND_ORDER_TRANSFORMATION_SYSTEM_HPP
 
-#include <algorithm>
-#include <cmath>
+#include <Eigen/Dense>
 
+#include "dmplib/manifolds/concepts.hpp"
 #include "dmplib/transformation_systems/transformation_system.hpp"
+#include "range/v3/range/conversion.hpp"
+#include "range/v3/view/transform.hpp"
 
+namespace dmp::transformationsystem {
+
+template <dmp::riemannmanifold::concepts::riemann_manifold M>
+class SecondOrderTs : public TransformationSystem<M> {
+    using Ts               = TransformationSystem<M>;  // NOLINT: alias case
+    using Tangent_t        = Ts::Tangent_t;
+    using ConstdoubleRef_t = Ts::ConstdoubleRef_t;
+
+
+private:
+    using Ts::_g;
+    using Ts::delta_pos_gain;
+
+    template <int Offset, typename Tpl>
+    [[nodiscard]] Tangent_t
+    forcing_term_impl(const Tpl& sample, const bool& remove_gain_contribution) const {
+        const Tangent_t acc_term =
+                std::pow(this->_T, 2.0) * std::get<2 + Offset>(sample);
+        const Tangent_t pos_term = logarithmic_map(_g, std::get<0 + Offset>(sample));
+        const Tangent_t vel_term = this->_T * std::get<1 + Offset>(sample);
+        Tangent_t       forcing = acc_term - _alpha * (2 * _beta * pos_term + vel_term);
+
+        const Tangent_t gain = delta_pos_gain();
+        if (remove_gain_contribution) {
+            // forcing.array() = forcing.array() / delta_pos_gain().array();
+            for (std::size_t i = 0; i < forcing.rows(); ++i) {
+                double f   = forcing(i);
+                forcing[i] = f / gain(i);
+            }
+        }
+
+        return forcing;
+    }
+
+
+public:
+    SecondOrderTs(ConstdoubleRef_t T) :
+            Ts(T), _alpha(48.0), _beta(48.0 / 4) {};  // NOLINT
+
+    [[nodiscard]] Tangent_t
+    evaluate_forcing_term(
+            const dmp::PosVelAccSample_t<M>& sample,
+            const bool&                      remove_gain_contribution
+    ) const {
+        return forcing_term_impl<0>(sample, remove_gain_contribution);
+    }
+
+    [[nodiscard]] Tangent_t
+    evaluate_forcing_term(
+            const dmp::StampedPosVelAccSample_t<M>& sample,
+            const bool&                             remove_gain_contribution
+    ) const {
+        return forcing_term_impl<1>(sample, remove_gain_contribution);
+    }
+
+    template <typename Tpl>
+    [[nodiscard]] std::vector<Tangent_t>
+    evaluate_forcing_term(
+            const std::vector<Tpl>& traj, const bool& remove_gain_contribution
+    ) const {
+        using ranges::views::transform;
+        return traj
+               | transform(
+                       [this,
+                        remove_gain_contribution](const auto& sample) -> Tangent_t {
+                           return evaluate_forcing_term(
+                                   sample, remove_gain_contribution
+                           );
+                       }
+               )
+               | ranges::to_vector;
+    }
+
+    template <typename Tpl>
+    Eigen::MatrixXd
+    evaluate_forcing_term_matrix(
+            const std::vector<Tpl>& traj, const bool& remove_gain_contribution
+    ) const {
+        static_assert(Tangent_t::RowsAtCompileTime != -1);
+        Eigen::MatrixXd res(traj.size(), Tangent_t::RowsAtCompileTime);
+
+        for (std::size_t i = 0; i < traj.size(); ++i) {
+            res.row(i) = evaluate_forcing_term(  // NOLINT: narrowing conversion on i
+                    traj[i],
+                    remove_gain_contribution
+            );
+        }
+
+        return res;
+    }
+
+private:
+    double _alpha;
+    double _beta;
+};
+
+
+}  // namespace dmp::transformationsystem
+
+/*
+#include "dmplib/transformation_systems/transformation_system.hpp"
 namespace dmp {
 
 template <typename Manifold>
@@ -90,5 +193,6 @@ protected:
 
 
 }  // namespace dmp
+*/
 
 #endif  // DMPLIB_SECOND_ORDER_TRANSFORMATION_SYSTEM_HPP

@@ -11,14 +11,17 @@ protected:
     double _alpha;
 
 public:
-    ExponentialDecayCs(const double& alpha);
+    ExponentialDecayCs(
+            std::reference_wrapper<const double> observation_period,
+            const double&                        alpha = 1.0 / 5.0  // NOLINT
+    );
 
-    [[nodiscard]] inline double
+    [[nodiscard]] double
     get_alpha() const {
         return _alpha;
     }
 
-    inline void
+    void
     set_alpha(const double& alpha) {
         _alpha = alpha;
     }
@@ -32,6 +35,10 @@ protected:
     [[nodiscard]] std::vector<double> distribution_on_support_impl(
             const std::size_t& size
     ) const;
+
+    [[nodiscard]] double
+    compute_coord_impl(const double& time) const;
+
 };
 
 }  // namespace dmp

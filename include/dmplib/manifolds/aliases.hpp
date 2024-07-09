@@ -7,19 +7,7 @@
 #include <tuple>
 #include <vector>
 
-#include "dmplib/manifolds/riemann_manifold.hpp"
-
-namespace dmp::riemannmanifold {
-
-template <int N>
-using Vec_t = Eigen::Matrix<double, N, 1>;
-
-using Vec2_t       = Vec_t<2>;  // NOLINT: are not magic numbers
-using Vec3_t       = Vec_t<3>;  // NOLINT
-using Vec6_t       = Vec_t<6>;  // NOLINT
-using Quaternion_t = Eigen::Quaterniond;
-
-}  // namespace dmp::riemannmanifold
+#include "dmplib/manifolds/riemann_manifold.hpp" 
 
 namespace dmp {
 

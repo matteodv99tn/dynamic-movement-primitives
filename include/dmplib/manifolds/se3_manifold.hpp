@@ -4,8 +4,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-#include "dmplib/manifolds/aliases.hpp"
-#include "dmplib/manifolds/riemann_manifold.hpp"
+#include "dmplib/manifolds/riemann_manifold.hpp" 
 
 namespace dmp::riemannmanifold {
 
@@ -15,6 +14,8 @@ struct SE3 {  // NOLINT: naming convention
 
     SE3(Vec3_t       position    = Vec3_t::Zero(),
         Quaternion_t orientation = Quaternion_t::Identity());
+
+    bool operator==(const SE3& other) const;
 };
 
 template <>
@@ -22,8 +23,8 @@ struct tangent_space_dimension<SE3> {
     static constexpr int value = 6;
 };
 
-Vec6_t       logarithmic_map(const SE3& q1, const SE3& q2);
-Quaternion_t exponential_map(const SE3& q, const Vec6_t& v);
+Vec6_t logarithmic_map(const SE3& q1, const SE3& q2);
+SE3    exponential_map(const SE3& q, const Vec6_t& v);
 
 }  // namespace dmp::riemannmanifold
 

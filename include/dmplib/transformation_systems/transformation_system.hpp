@@ -1,12 +1,69 @@
 #ifndef DMPLIB_TRANSFORMATION_SYSTEM_HPP
 #define DMPLIB_TRANSFORMATION_SYSTEM_HPP
 
-#include <functional>
+#include <cstdlib>
+#include <iostream>
 
-#include "dmplib/class_traits/integrable.hpp"
-#include "range/v3/range/conversion.hpp"
-#include "range/v3/view/transform.hpp"
+#include "dmplib/manifolds/concepts.hpp"
+#include "dmplib/manifolds/rn_manifold.hpp"
+#include "fmt/ostream.h"
 
+namespace dmp::transformationsystem {
+
+template <dmp::riemannmanifold::concepts::riemann_manifold M>
+class TransformationSystem {
+public:
+    using Domain_t         = M;
+    using Tangent_t        = dmp::riemannmanifold::tangent_space_t<M>;
+    using ConstdoubleRef_t = std::reference_wrapper<const double>;
+
+    TransformationSystem(ConstdoubleRef_t T) :
+            _y(dmp::riemannmanifold::default_constructor<Domain_t>()),   // NOLINT
+            _y0(dmp::riemannmanifold::default_constructor<Domain_t>()),  // NOLINT
+            _g(dmp::riemannmanifold::default_constructor<Domain_t>()),   // NOLINT
+            _T(T) {};
+
+    void
+    set_initial_pos_state(const Domain_t& pos) {
+        _y0 = pos;
+    }
+
+    void
+    set_pos_goal_state(const Domain_t& pos) {
+        _y0 = pos;
+    }
+
+    void
+    set_pos_state(const Domain_t& pos) {
+        _y = pos;
+    }
+
+    [[nodiscard]] double
+    get_period() const {
+        return _T;
+    }
+
+protected:
+    [[nodiscard]] Tangent_t
+    delta_pos_gain() const {
+        auto gain = dmp::riemannmanifold::logarithmic_map(_g, _y0);
+        for (const double& v : gain) {
+            if (std::abs(v) < 1e-3)  // NOLINT: magic number
+                fmt::println(std::cerr, "Gain is small ({})", v);
+        }
+        return gain;
+    }
+
+    Domain_t         _y;   // current position state
+    Domain_t         _y0;  // initial position state
+    Domain_t         _g;   // goal
+    ConstdoubleRef_t _T;   // observation period;  NOLINT: type case
+};
+
+
+}  // namespace dmp::transformationsystem
+
+/*
 namespace dmp {
 
 template <typename Derived, typename Manifold>
@@ -84,6 +141,7 @@ public:
     }
 };
 }  // namespace dmp
+*/
 
 
 #endif  // DMPLIB_TRANSFORMATION_SYSTEM_HPP

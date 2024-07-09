@@ -3,13 +3,12 @@
 
 #include <cstddef>
 #include <Eigen/Dense>
-#include <utility>
 
 #include "range/v3/algorithm/copy.hpp"
 #include "range/v3/view/take.hpp"
 #include "range/v3/view/transform.hpp"
 
-namespace dmp {
+namespace dmp::learnablefunction {
 
 template <typename Derived>
 class BasisFunction {
@@ -19,13 +18,10 @@ public:
     using WeightsVector_t = std::vector<Eigen::VectorXd>;
 
     BasisFunction(
-            const std::size_t& basis_size,
-            const double&      min_support = 0.0,
-            const double&      max_support = 1.0,
-            const bool&        include_ub  = true
+            const std::size_t& basis_size, const std::vector<double>& function_centers
     ) :
-            _basis_size(basis_size), _support({min_support, max_support}) {
-        static_cast<Derived*>(this)->init_on_support(include_ub);
+            _basis_size(basis_size), _c(function_centers) {
+        assert(function_centers.size() == basis_size);
     }
 
     // Parent class must implement
@@ -65,7 +61,6 @@ public:
             n_elems = weights.size();
         }
 
-
         rs::copy(
                 weights | rv::transform([this, arg, normalize](const Weights_t& w) {
                     return evaluate(arg, w, normalize);
@@ -75,10 +70,26 @@ public:
         return res;
     }
 
+    void
+    set_function_centers(const std::vector<double>& c) {
+        assert(c.size() == _basis_size);
+        _c = c;
+    }
+
+    [[nodiscard]] std::vector<double>
+    get_function_centers() const {
+        return _c;
+    }
+
+    [[nodiscard]] std::size_t
+    size() const {
+        return _basis_size;
+    }
+
 protected:
-    std::size_t               _basis_size;
-    std::pair<double, double> _support;
+    std::size_t         _basis_size;
+    std::vector<double> _c;
 };
-}  // namespace dmp
+}  // namespace dmp::learnablefunction
 
 #endif  // DMPLIB_BASIS_FUNCTION_HPP
