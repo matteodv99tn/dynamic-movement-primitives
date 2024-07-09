@@ -51,8 +51,8 @@ public:
             const WeightsVector_t& weights,
             const bool&            normalize = true
     ) const {
-        namespace rs = ranges;
-        namespace rv = ranges::views;
+        namespace rs = ::ranges;
+        namespace rv = ::ranges::views;
 
         Eigen::Matrix<double, N, 1> res;
         std::size_t                 n_elems = N;

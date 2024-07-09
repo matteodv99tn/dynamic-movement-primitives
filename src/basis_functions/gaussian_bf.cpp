@@ -49,7 +49,7 @@ Gbf_t::get_h_coefficients() const {
 
 Gbf_t::Basis_t
 Gbf_t::evaluate_impl(const double& arg) const {
-    Eigen::VectorXd res;
+    Eigen::VectorXd res(_basis_size);
     for(std::size_t i = 0; i < _basis_size; i++){
         res(i) =  std::exp(_h[i] * std::pow(arg - _c[i], 2.0));
     }

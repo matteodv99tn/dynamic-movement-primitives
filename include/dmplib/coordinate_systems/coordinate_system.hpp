@@ -75,9 +75,7 @@ public:
      */
     [[nodiscard]] std::vector<double>
     distribution_on_support(const std::size_t& size) const {
-        return static_cast<const Derived* const>(this)->distribution_on_support_impl(
-                size
-        );
+        return static_cast<const Derived*>(this)->distribution_on_support_impl(size);
     }
 
     [[nodiscard]] double
@@ -85,8 +83,7 @@ public:
         return static_cast<const Derived*>(this)->compute_coord_impl(time);
     }
 
-    [[nodiscard]]
-    std::vector<double>
+    [[nodiscard]] std::vector<double>
     compute_coordinate(const std::vector<double>& times) const {
         std::vector<double> coords(times.size());
         for (std::size_t i = 0; i < times.size(); i++)
@@ -94,8 +91,7 @@ public:
         return coords;
     }
 
-    [[nodiscard]]
-    Eigen::VectorXd
+    [[nodiscard]] Eigen::VectorXd
     compute_coordinate_vec(const std::vector<double>& times) const {
         Eigen::VectorXd coords(times.size());
         for (long i = 0; i < times.size(); i++)

@@ -5,7 +5,6 @@
 #include <memory>
 #include <stdexcept>
 
-#include "dmplib/coordinate_systems/coordinate_system.hpp"
 #include "dmplib/manifolds/aliases.hpp"
 
 namespace dmp {

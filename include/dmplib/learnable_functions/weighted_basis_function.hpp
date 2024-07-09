@@ -3,6 +3,7 @@
 
 #include <Eigen/Dense>
 #include <Eigen/src/QR/ColPivHouseholderQR.h>
+#include <iostream>
 
 #include "dmplib/manifolds/concepts.hpp"
 #include "dmplib/manifolds/riemann_manifold.hpp"
@@ -49,12 +50,14 @@ public:
         assert(desired_function.cols() == w_count);
 
         Eigen::MatrixXd phi(n_dems, _basis.size());
-        for (long i = 0; i < n_dems; i++)
+        for (long i = 0; i < n_dems; i++){
             phi.row(i) = _basis.evaluate(args[i], _use_normalisation);
+        }
         const Eigen::ColPivHouseholderQR<Eigen::MatrixXd> qr_factorisation(phi);
 
-        for (long i = 0; i < w_count; i++)
+        for (long i = 0; i < w_count; i++){
             _ws[i] = qr_factorisation.solve(desired_function.col(i));
+        }
     }
 
 private:

@@ -1,11 +1,11 @@
 #include "dmplib/coordinate_systems/exponential_decay_cs.hpp"
 
 #include <cmath>
-#include <functional>
 
 #include "dmplib/coordinate_systems/coordinate_system.hpp"
 #include "range/v3/algorithm/copy.hpp"
 #include "range/v3/view/iota.hpp"
+#include "range/v3/view/take.hpp"
 #include "range/v3/view/transform.hpp"
 
 namespace rs = ranges;
@@ -26,12 +26,11 @@ Edcs_t::step_impl() {
 
 std::vector<double>
 Edcs_t::distribution_on_support_impl(const std::size_t& size) const {
-    std::vector<double> c;
     auto ci_formula = [a = _alpha, n = static_cast<double>(size)](const int& i
                       ) -> double { return std::exp((-a * i - 1.0) / (n - 1.0)); };
 
-    c.reserve(size);
-    rs::copy(rv::iota(size) | rv::transform(ci_formula), c.data());
+    std::vector<double> c(size);
+    rs::copy(rv::iota(0) | rv::take(size) | rv::transform(ci_formula), c.data());
 
     return c;
 }

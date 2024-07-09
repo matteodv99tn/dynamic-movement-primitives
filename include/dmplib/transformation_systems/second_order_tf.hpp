@@ -45,7 +45,7 @@ private:
 
 public:
     SecondOrderTs(ConstdoubleRef_t T) :
-            Ts(T), _alpha(48.0), _beta(48.0 / 4) {};  // NOLINT
+            Ts(T), _alpha(48.0), _beta(48.0 / 4){};  // NOLINT
 
     [[nodiscard]] Tangent_t
     evaluate_forcing_term(
@@ -68,7 +68,7 @@ public:
     evaluate_forcing_term(
             const std::vector<Tpl>& traj, const bool& remove_gain_contribution
     ) const {
-        using ranges::views::transform;
+        using ::ranges::views::transform;
         return traj
                | transform(
                        [this,
@@ -78,7 +78,7 @@ public:
                            );
                        }
                )
-               | ranges::to_vector;
+               | ::ranges::to_vector;
     }
 
     template <typename Tpl>
