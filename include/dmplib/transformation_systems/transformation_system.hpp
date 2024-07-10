@@ -4,24 +4,26 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "dmplib/class_traits/integrable.hpp"
 #include "dmplib/manifolds/concepts.hpp"
 #include "dmplib/manifolds/rn_manifold.hpp"
+#include "dmplib/time_axis.hpp"
 #include "fmt/ostream.h"
 
 namespace dmp::transformationsystem {
 
-template <dmp::riemannmanifold::concepts::riemann_manifold M>
-class TransformationSystem {
+template <typename Der, dmp::riemannmanifold::concepts::riemann_manifold M>
+class TransformationSystem : public Integrable<TransformationSystem<Der, M>> {
 public:
-    using Domain_t         = M;
-    using Tangent_t        = dmp::riemannmanifold::tangent_space_t<M>;
-    using ConstdoubleRef_t = std::reference_wrapper<const double>;
+    using Domain_t  = M;
+    using Tangent_t = dmp::riemannmanifold::tangent_space_t<Domain_t>;
 
-    TransformationSystem(ConstdoubleRef_t T) :
+    TransformationSystem(::dmp::TimeAxis::Reference time_axis) :
+            Integrable<TransformationSystem<Der, M>>(time_axis),
             _y(dmp::riemannmanifold::default_constructor<Domain_t>()),   // NOLINT
             _y0(dmp::riemannmanifold::default_constructor<Domain_t>()),  // NOLINT
-            _g(dmp::riemannmanifold::default_constructor<Domain_t>()),   // NOLINT
-            _T(T) {};
+            _g(dmp::riemannmanifold::default_constructor<Domain_t>())    // NOLINT
+    {};
 
     void
     set_initial_pos_state(const Domain_t& pos) {
@@ -40,7 +42,17 @@ public:
 
     [[nodiscard]] double
     get_period() const {
-        return _T;
+        return Integrable<TransformationSystem<Der, M>>::T();
+    }
+
+    [[nodiscard]] Tangent_t
+    get_forcing_term() const {
+        return _f;
+    }
+
+    void
+    set_forcing_term(const Tangent_t& f) const {
+        _f = f;
     }
 
 protected:
@@ -54,10 +66,10 @@ protected:
         return gain;
     }
 
-    Domain_t         _y;   // current position state
-    Domain_t         _y0;  // initial position state
-    Domain_t         _g;   // goal
-    ConstdoubleRef_t _T;   // observation period;  NOLINT: type case
+    Domain_t  _y;   // current position state
+    Domain_t  _y0;  // initial position state
+    Domain_t  _g;   // goal
+    Tangent_t _f;   // forcing term
 };
 
 

@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "dmplib/coordinate_systems/coordinate_system.hpp"
+#include "dmplib/time_axis.hpp"
 #include "range/v3/algorithm/copy.hpp"
 #include "range/v3/view/iota.hpp"
 #include "range/v3/view/take.hpp"
@@ -11,17 +12,16 @@
 namespace rs = ranges;
 namespace rv = ranges::views;
 
-using Edcs_t = dmp::ExponentialDecayCs;
+using Edcs_t   = dmp::ExponentialDecayCs;
+using TimeAxis = dmp::TimeAxis; // NOLINT
 
-Edcs_t::ExponentialDecayCs(
-        std::reference_wrapper<const double> observation_period, const double& alpha
-) :
-        CoordinateSystem(observation_period, 1), _alpha(alpha) {
+Edcs_t::ExponentialDecayCs(TimeAxis::Reference time_axis, const double& alpha) :
+        CoordinateSystem(time_axis, 1), _alpha(alpha) {
 }
 
 void
 Edcs_t::step_impl() {
-    _x -= _alpha * _x * _dt;
+    _x -= _alpha * _x * dt() / T();
 }
 
 std::vector<double>
@@ -37,5 +37,5 @@ Edcs_t::distribution_on_support_impl(const std::size_t& size) const {
 
 double
 Edcs_t::compute_coord_impl(const double& time) const {
-    return std::exp(-_alpha / _T * time);
+    return std::exp(-_alpha / T() * time);
 }

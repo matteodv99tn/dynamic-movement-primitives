@@ -5,8 +5,10 @@
 #include <cstdint>
 #include <Eigen/Dense>
 #include <functional>
+#include <optional>
 
 #include "dmplib/class_traits/integrable.hpp"
+#include "dmplib/time_axis.hpp"
 
 namespace dmp {
 enum RepresentationType : std::uint8_t {
@@ -20,19 +22,9 @@ public:
     using Support_t                          = std::tuple<double, double>;
     static constexpr RepresentationType type = Rep_Type;
 
-protected:
-    double                               _x;  //< coordinate
-    std::reference_wrapper<const double> _T;  //< observation period NOLINT
-
-    Support_t _support;
-
-public:
-    CoordinateSystem(
-            std::reference_wrapper<const double>& observation_period,
-            const double&                         initial_value = 1
-    ) :
+    CoordinateSystem(TimeAxis::Reference& time_axis, const double& initial_value = 1) :
+            Integrable<Derived>(time_axis),
             _x(initial_value),
-            _T(observation_period),
             _support(
                     (Rep_Type == POINT_TO_POINT) ? std::make_tuple(0.0, 1.0)
                                                  : std::make_tuple(0.0, 2 * M_PI)
@@ -46,21 +38,6 @@ public:
     void
     set_coordinate(const double& x) {
         _x = x;
-    }
-
-    double
-    get_observation_period() {
-        return _T;
-    }
-
-    void
-    set_observation_period(const std::reference_wrapper<const double> T) {
-        _T = T;
-    }
-
-    std::reference_wrapper<const double>
-    get_observation_period_reference() {
-        return std::cref(_T);
     }
 
     [[nodiscard]] Support_t
@@ -79,8 +56,10 @@ public:
     }
 
     [[nodiscard]] double
-    compute_coordinate(const double& time) const {
-        return static_cast<const Derived*>(this)->compute_coord_impl(time);
+    compute_coordinate(const std::optional<double>& time) const {
+        return static_cast<const Derived*>(this)->compute_coord_impl(
+                time.value_or(time_axis().get_time())
+        );
     }
 
     [[nodiscard]] std::vector<double>
@@ -94,11 +73,28 @@ public:
     [[nodiscard]] Eigen::VectorXd
     compute_coordinate_vec(const std::vector<double>& times) const {
         Eigen::VectorXd coords(times.size());
-        for (long i = 0; i < times.size(); i++)
+        for (long i = 0; i < static_cast<long>(times.size()); i++)
             coords(i) = compute_coordinate(times[i]);
         return coords;
     }
+
+protected:
+    using Integrable<Derived>::time_axis;
+
+    [[nodiscard]] double
+    T() const {  // NOLINT
+        return time_axis().get_period();
+    }
+
+    [[nodiscard]] double
+    dt() const {
+        return time_axis().get_timestep();
+    }
+
+    double              _x;          //< coordinate
+    Support_t           _support;
 };
+
 
 }  // namespace dmp
 

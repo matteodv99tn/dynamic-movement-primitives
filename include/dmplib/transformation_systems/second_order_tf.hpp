@@ -4,30 +4,38 @@
 #include <Eigen/Dense>
 
 #include "dmplib/manifolds/concepts.hpp"
+#include "dmplib/manifolds/riemann_manifold.hpp"
+#include "dmplib/manifolds/rn_manifold.hpp"
+#include "dmplib/time_axis.hpp"
 #include "dmplib/transformation_systems/transformation_system.hpp"
 #include "range/v3/range/conversion.hpp"
 #include "range/v3/view/transform.hpp"
+#include "transformation_system.hpp"
 
 namespace dmp::transformationsystem {
 
 template <dmp::riemannmanifold::concepts::riemann_manifold M>
-class SecondOrderTs : public TransformationSystem<M> {
-    using Ts               = TransformationSystem<M>;  // NOLINT: alias case
-    using Tangent_t        = Ts::Tangent_t;
-    using ConstdoubleRef_t = Ts::ConstdoubleRef_t;
-
-
+class SecondOrderTs : public TransformationSystem<SecondOrderTs<M>, M> {
 private:
+    using Ts        = TransformationSystem<SecondOrderTs<M>, M>;  // NOLINT: alias case
+    using Domain_t  = Ts::Domain_t;
+    using Tangent_t = Ts::Tangent_t;
+
+
+    using Ts::_f;
     using Ts::_g;
+    using Ts::_y;
     using Ts::delta_pos_gain;
+    using Ts::dt;
+    using Ts::T;
 
     template <int Offset, typename Tpl>
     [[nodiscard]] Tangent_t
     forcing_term_impl(const Tpl& sample, const bool& remove_gain_contribution) const {
-        const Tangent_t acc_term =
-                std::pow(this->_T, 2.0) * std::get<2 + Offset>(sample);
+        using ::dmp::riemannmanifold::logarithmic_map;
+        const Tangent_t acc_term = std::pow(T(), 2.0) * std::get<2 + Offset>(sample);
         const Tangent_t pos_term = logarithmic_map(_g, std::get<0 + Offset>(sample));
-        const Tangent_t vel_term = this->_T * std::get<1 + Offset>(sample);
+        const Tangent_t vel_term = T() * std::get<1 + Offset>(sample);
         Tangent_t       forcing = acc_term - _alpha * (2 * _beta * pos_term + vel_term);
 
         const Tangent_t gain = delta_pos_gain();
@@ -38,14 +46,21 @@ private:
                 forcing[i] = f / gain(i);
             }
         }
-
         return forcing;
     }
 
 
 public:
-    SecondOrderTs(ConstdoubleRef_t T) :
-            Ts(T), _alpha(48.0), _beta(48.0 / 4){};  // NOLINT
+    SecondOrderTs(
+            ::dmp::TimeAxis::Reference time_axis,
+            const double&              alpha = 48.0,       // NOLINT: magic numbers
+            const double&              beta  = 48.0 / 4.0  // NOLINT: magic numbers
+    ) :
+            dmp::transformationsystem::TransformationSystem<SecondOrderTs<M>, M>(
+                    time_axis
+            ),
+            _alpha(alpha),
+            _beta(beta) {};  // NOLINT
 
     [[nodiscard]] Tangent_t
     evaluate_forcing_term(
@@ -100,8 +115,22 @@ public:
     }
 
 private:
-    double _alpha;
-    double _beta;
+    // friend class Integrable<SecondOrderTf<M>>;
+    // friend class TransformationSystem<SecondOrderTs<M>>;
+
+    void
+    step_impl() {
+        using ::dmp::riemannmanifold::exponential_map;
+        const Domain_t  pos_term = logarithmic_map(_g, _y);
+        const Tangent_t dz_dt    = _alpha * (2 * _beta * pos_term - _z) + this->_f;
+        const Tangent_t dy_dt    = _z;
+        _z += dz_dt * dt() / T();
+        _y = exponential_map(_y, _z);
+    }
+
+    double    _alpha;
+    double    _beta;
+    Tangent_t _z;
 };
 
 

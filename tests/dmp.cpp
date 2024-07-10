@@ -1,6 +1,3 @@
-#include "dmplib/dmp.hpp"
-
-#include <Eigen/src/Core/Matrix.h>
 #include <memory>
 
 #include "dmplib/coordinate_systems/exponential_decay_cs.hpp"
@@ -8,7 +5,12 @@
 #include "dmplib/learnable_functions/weighted_basis_function.hpp"
 #include "dmplib/manifolds/aliases.hpp"
 #include "dmplib/manifolds/se3_manifold.hpp"
+#include "dmplib/time_axis.hpp"
 #include "dmplib/transformation_systems/second_order_tf.hpp"
+#include "dmplib/transformation_systems/transformation_system.hpp"
+
+// clang-format off
+#include "dmplib/dmp.hpp"
 
 
 using dmp::ExponentialDecayCs;
@@ -23,11 +25,12 @@ using Dmp_t = dmp::Dmp<SE3, ExponentialDecayCs, SecondOrderTs<SE3>, Func_t>;
 
 int
 main() {
+
     Dmp_t dmp;
 
     dmp.set_period(2.0);
-    dmp.initialise_coordinate_system(dmp.get_period());
-    dmp.initialise_transformation_system(dmp.get_period());
+    dmp.initialise_coordinate_system(dmp.time_axis());
+    dmp.initialise_transformation_system(dmp.time_axis());
 
     const std::size_t         n_basis = 25;  // NOLINT
     const std::vector<double> c = dmp.coord_sys().distribution_on_support(n_basis);
@@ -47,6 +50,11 @@ main() {
     }
 
     dmp.batch_learn(traj, true);
+
+    /*
+    auto h = dmp.coord_sys().step_handler();
+    h();
+    */
 
     return 0;
 }

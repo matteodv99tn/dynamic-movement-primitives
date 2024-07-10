@@ -2,15 +2,22 @@
 #define DMPLIB_INTEGRABLE_CLASS_HPP
 
 #include <chrono>
+#include <functional>
 
+#include "dmplib/time_axis.hpp"
 #include "dmplib/utils/constants.hpp"
 
 namespace dmp {
 
 template <typename Derived>
 class Integrable {
+private:
+    TimeAxis::Reference _time_axis;
+
 public:
-    Integrable(const double& dt = dmp::defaults::integration_period) : _dt(dt) {};
+    using StepHandleFun_t = std::function<void(void)>;
+
+    Integrable(TimeAxis::Reference time_axis) : _time_axis(time_axis) {};
 
     // This function requires the derived class to implement
     // void step_impl();
@@ -19,31 +26,36 @@ public:
         static_cast<Derived*>(this)->step_impl();
     }
 
-    [[nodiscard]] double
-    get_integration_period() const {
-        return _dt;
+    [[nodiscard]] const TimeAxis&
+    time_axis() const {
+        return _time_axis.get();
     }
 
-    void
-    set_integration_period(const double& dt) {
-        _dt = dt;
+    [[nodiscard]] TimeAxis&
+    time_axis() {
+        return _time_axis.get();
     }
 
-    template <typename Rep, typename Period>
-    void
-    set_integration_period(const std::chrono::duration<Rep, Period>& dt) {
-        using std::chrono::duration_cast;
-        using std::chrono::nanoseconds;
-        const double ns_to_s = 1e-9;
-        set_integration_period(duration_cast<nanoseconds>(dt).count() * ns_to_s);
-    }
-
-    void set_integration_frequency(const double& freq_hz){
-        _dt = 1/freq_hz;
+    StepHandleFun_t
+    step_handler() {
+        return [this]() { this->step(); };
     }
 
 protected:
-    double _dt;
+    [[nodiscard]] double
+    dt() const {
+        return time_axis().get_integration_timestep();
+    }
+
+    [[nodiscard]] double
+    T() const {  // NOLINT
+        return time_axis().get_period();
+    }
+
+    [[nodiscard]] double
+    t() const {
+        return time_axis().get_time();
+    }
 };
 
 }  // namespace dmp

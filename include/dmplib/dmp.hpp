@@ -6,6 +6,7 @@
 #include <stdexcept>
 
 #include "dmplib/manifolds/aliases.hpp"
+#include "dmplib/time_axis.hpp"
 
 namespace dmp {
 
@@ -23,7 +24,7 @@ public:
     using ConstdoubleRef_t          = std::reference_wrapper<double>;
     static constexpr double ts_to_s = 1e-9;
 
-    Dmp() : _cs(nullptr), _ts(nullptr), _fun(nullptr), _T(0.0) {};
+    Dmp() : _cs(nullptr), _ts(nullptr), _fun(nullptr) {};
 
     void
     batch_learn(
@@ -43,7 +44,7 @@ public:
         transf_sys().set_pos_goal_state(std::get<1>(traj.back()));
 
         const Eigen::VectorXd s_coords = coord_sys().compute_coordinate_vec(times);
-        const Eigen::MatrixXd     f_des =
+        const Eigen::MatrixXd f_des =
                 transf_sys().evaluate_forcing_term_matrix(traj, apply_distance_scaling);
 
         learnable_func().learn(s_coords, f_des);
@@ -90,14 +91,20 @@ public:
         return _cs && _ts && _fun;
     }
 
-    ConstdoubleRef_t
+    double
     get_period() {
-        return _T;
+        return _time_axis.get_period();
     }
 
     void
     set_period(const double& T) {
-        _T = T;
+        _time_axis.set_period(T);
+    }
+
+    [[nodiscard]]
+    TimeAxis::Reference
+    time_axis() {
+        return _time_axis;
     }
 
 
@@ -106,7 +113,7 @@ private:
     std::unique_ptr<TransformationSystem_t> _ts;
     std::unique_ptr<LearnableFunction_t>    _fun;
 
-    double _T;  // NOLINT
+    TimeAxis _time_axis;
 };
 }  // namespace dmp
 

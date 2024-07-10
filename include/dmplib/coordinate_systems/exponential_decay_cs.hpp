@@ -3,6 +3,7 @@
 
 #include "dmplib/class_traits/integrable.hpp"
 #include "dmplib/coordinate_systems/coordinate_system.hpp"
+#include "dmplib/time_axis.hpp"
 
 namespace dmp {
 
@@ -12,8 +13,8 @@ protected:
 
 public:
     ExponentialDecayCs(
-            std::reference_wrapper<const double> observation_period,
-            const double&                        alpha = 1.0 / 5.0  // NOLINT
+            TimeAxis::Reference time_axis,
+            const double&       alpha = 1.0 / 5.0  // NOLINT
     );
 
     [[nodiscard]] double
@@ -36,9 +37,7 @@ protected:
             const std::size_t& size
     ) const;
 
-    [[nodiscard]] double
-    compute_coord_impl(const double& time) const;
-
+    [[nodiscard]] double compute_coord_impl(const double& time) const;
 };
 
 }  // namespace dmp
