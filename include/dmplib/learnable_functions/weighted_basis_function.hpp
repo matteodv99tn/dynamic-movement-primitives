@@ -36,7 +36,7 @@ public:
 
     [[nodiscard]]
     Tangent_t
-    evalute(const double& arg) {
+    evaluate(const double& arg) {
         Tangent_t res;
         for (std::size_t i = 0; i < w_count; i++)
             res(i) = _basis.evaluate(arg, _ws[i], _use_normalisation);
@@ -46,16 +46,16 @@ public:
     void
     learn(const Eigen::VectorXd& args, const Eigen::MatrixXd& desired_function) {
         const std::size_t n_dems = args.rows();
-        assert(desired_function.rows() == n_dems);
+        assert(static_cast<std::size_t>(desired_function.rows()) == n_dems);
         assert(desired_function.cols() == w_count);
 
         Eigen::MatrixXd phi(n_dems, _basis.size());
-        for (long i = 0; i < n_dems; i++){
+        for (long i = 0; i < static_cast<long>(n_dems); i++) {
             phi.row(i) = _basis.evaluate(args[i], _use_normalisation);
         }
         const Eigen::ColPivHouseholderQR<Eigen::MatrixXd> qr_factorisation(phi);
 
-        for (long i = 0; i < w_count; i++){
+        for (long i = 0; i < w_count; i++) {
             _ws[i] = qr_factorisation.solve(desired_function.col(i));
         }
     }

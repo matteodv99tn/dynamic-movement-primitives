@@ -12,17 +12,17 @@ class TimeAxis {
 public:
     using Reference = std::reference_wrapper<TimeAxis>;  // NOLINT
 
-    [[nodiscard]] inline double
+    [[nodiscard]] double
     get_time() const {
         return _time;
     }
 
-    [[nodiscard]] inline double
+    [[nodiscard]] double
     get_period() const {
         return _period;
     }
 
-    [[nodiscard]] inline double
+    [[nodiscard]] double
     get_timestep() const {
         return _timestep;
     }
@@ -65,6 +65,10 @@ public:
     time_as_timestamp() const {
         const double s_to_ns = 1e9;
         return static_cast<TimeStamp_t>(_time * s_to_ns);
+    }
+
+    void step() {
+        _time += _timestep;
     }
 
 

@@ -44,7 +44,7 @@ public:
 protected:
     [[nodiscard]] double
     dt() const {
-        return time_axis().get_integration_timestep();
+        return time_axis().get_timestep();
     }
 
     [[nodiscard]] double

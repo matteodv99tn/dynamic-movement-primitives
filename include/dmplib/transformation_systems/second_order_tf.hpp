@@ -18,8 +18,8 @@ template <dmp::riemannmanifold::concepts::riemann_manifold M>
 class SecondOrderTs : public TransformationSystem<SecondOrderTs<M>, M> {
 private:
     using Ts        = TransformationSystem<SecondOrderTs<M>, M>;  // NOLINT: alias case
-    using Domain_t  = Ts::Domain_t;
-    using Tangent_t = Ts::Tangent_t;
+    using Domain_t  = M;
+    using Tangent_t = dmp::riemannmanifold::tangent_space_t<M>;
 
 
     using Ts::_f;
@@ -41,7 +41,7 @@ private:
         const Tangent_t gain = delta_pos_gain();
         if (remove_gain_contribution) {
             // forcing.array() = forcing.array() / delta_pos_gain().array();
-            for (std::size_t i = 0; i < forcing.rows(); ++i) {
+            for (long i = 0; i < forcing.rows(); ++i) {
                 double f   = forcing(i);
                 forcing[i] = f / gain(i);
             }
@@ -114,23 +114,32 @@ public:
         return res;
     }
 
+    void
+    reset_velocity_state() {
+        _z = Tangent_t::Zero();
+    }
+
+
 private:
     // friend class Integrable<SecondOrderTf<M>>;
-    // friend class TransformationSystem<SecondOrderTs<M>>;
+    friend class TransformationSystem<SecondOrderTs<M>, M>;
 
     void
     step_impl() {
         using ::dmp::riemannmanifold::exponential_map;
-        const Domain_t  pos_term = logarithmic_map(_g, _y);
-        const Tangent_t dz_dt    = _alpha * (2 * _beta * pos_term - _z) + this->_f;
-        const Tangent_t dy_dt    = _z;
-        _z += dz_dt * dt() / T();
-        _y = exponential_map(_y, _z);
+        const Tangent_t pos_term = logarithmic_map(_g, _y);
+        // _dz_dt                  = _alpha * (2 * _beta * pos_term - _z) + this->_f;
+        _dz_dt                = _alpha * (_beta * pos_term - _z) + this->_f;
+        _z += _dz_dt * dt() / T();
+        _y = exponential_map(_y, _z * dt());
     }
 
-    double    _alpha;
-    double    _beta;
+    double _alpha;
+    double _beta;
+
+public:
     Tangent_t _z;
+    Tangent_t _dz_dt;
 };
 
 

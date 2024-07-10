@@ -2,11 +2,15 @@
 #define DMPLIB_DMP_HPP
 
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 
+#include "dmplib/data_handler/conversions.hpp"
 #include "dmplib/manifolds/aliases.hpp"
+#include "dmplib/manifolds/se3_manifold.hpp"
 #include "dmplib/time_axis.hpp"
+#include "fmt/ostream.h"
 
 namespace dmp {
 
@@ -21,10 +25,12 @@ public:
     using TransformationSystem_t = Transformation_System;
     using LearnableFunction_t    = Learnable_Function;
 
-    using ConstdoubleRef_t          = std::reference_wrapper<double>;
+    using StampedSample_t     = dmp::StampedPosVelAccSample_t<Manifold>;
+    using StampedTrajectory_t = dmp::StampedPosVelAccTrajectory_t<Manifold>;
+
     static constexpr double ts_to_s = 1e-9;
 
-    Dmp() : _cs(nullptr), _ts(nullptr), _fun(nullptr) {};
+    Dmp() : _cs(nullptr), _ts(nullptr), _fun(nullptr){};
 
     void
     batch_learn(
@@ -48,6 +54,48 @@ public:
                 transf_sys().evaluate_forcing_term_matrix(traj, apply_distance_scaling);
 
         learnable_func().learn(s_coords, f_des);
+    }
+
+    StampedTrajectory_t
+    integrate_trajectory(
+            const StampedSample_t& start_pos,
+            const StampedSample_t& goal,
+            const double&          T,
+            const double&          dt
+    ) {
+        time_axis().reset_time();
+        time_axis().set_period(T);
+        time_axis().set_integration_timestep(dt);
+        coord_sys().set_coordinate(1.0);
+        transf_sys().set_initial_pos_state(std::get<Manifold>(start_pos));
+        transf_sys().set_pos_state(std::get<Manifold>(start_pos));
+        transf_sys().set_pos_goal_state(std::get<Manifold>(goal));
+        transf_sys().reset_velocity_state();
+
+        StampedTrajectory_t traj;
+
+        while (_time_axis.get_time() < T) {
+            fmt::println("====== TIME {} ========", time_axis().get_time());
+            fmt::println(" Pos: {}", dmp::to::string(transf_sys().get_pos_state()));
+            fmt::println(" Vel: {}", dmp::to::string(transf_sys()._z));
+            fmt::println(" Acc: {}", dmp::to::string(transf_sys()._dz_dt));
+            traj.emplace_back(
+                    time_axis().time_as_timestamp(),
+                    transf_sys().get_pos_state(),
+                    transf_sys()._z,
+                    transf_sys()._dz_dt
+            );
+            const double s = coord_sys().get_coordinate();
+            coord_sys().step();
+            auto f = learnable_func().evaluate(s);
+            fmt::println(" Coord s: {}", s);
+            fmt::println(" Force: {}", dmp::to::string(f));
+            transf_sys().set_forcing_term(learnable_func().evaluate(s));
+            transf_sys().step();
+
+            time_axis().step();
+        }
+        return traj;
     }
 
     CoordinateSystem_t&
@@ -101,8 +149,7 @@ public:
         _time_axis.set_period(T);
     }
 
-    [[nodiscard]]
-    TimeAxis::Reference
+    [[nodiscard]] TimeAxis&
     time_axis() {
         return _time_axis;
     }

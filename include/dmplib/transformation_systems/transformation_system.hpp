@@ -40,6 +40,11 @@ public:
         _y = pos;
     }
 
+    [[nodiscard]] Domain_t
+    get_pos_state() const {
+        return _y;
+    }
+
     [[nodiscard]] double
     get_period() const {
         return Integrable<TransformationSystem<Der, M>>::T();
@@ -51,11 +56,18 @@ public:
     }
 
     void
-    set_forcing_term(const Tangent_t& f) const {
+    set_forcing_term(const Tangent_t& f) {
         _f = f;
     }
 
 protected:
+    friend class dmp::Integrable<TransformationSystem<Der, M>>;
+
+    void
+    step_impl() {
+       static_cast<Der*>(this)->step_impl();
+    }
+
     [[nodiscard]] Tangent_t
     delta_pos_gain() const {
         auto gain = dmp::riemannmanifold::logarithmic_map(_g, _y0);

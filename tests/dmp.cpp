@@ -51,6 +51,8 @@ main() {
 
     dmp.batch_learn(traj, true);
 
+    [[maybe_unused]] auto rec = dmp.integrate_trajectory(traj.front(), traj.back(), 5.0, 0.01);
+
     /*
     auto h = dmp.coord_sys().step_handler();
     h();

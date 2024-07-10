@@ -51,7 +51,7 @@ Gbf_t::Basis_t
 Gbf_t::evaluate_impl(const double& arg) const {
     Eigen::VectorXd res(_basis_size);
     for(std::size_t i = 0; i < _basis_size; i++){
-        res(i) =  std::exp(_h[i] * std::pow(arg - _c[i], 2.0));
+        res(i) =  std::exp(_h[i] * std::pow(arg - _c[i], 2.0)); // NOLINT
     }
     return res;
 }
