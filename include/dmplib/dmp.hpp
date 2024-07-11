@@ -35,7 +35,7 @@ public:
     void
     batch_learn(
             const dmp::StampedPosVelAccTrajectory_t<Manifold>& traj,
-            bool                                               apply_distance_scaling
+            bool apply_distance_scaling = true
     ) {
         assert(ready());
         dmp::TimeStamp_t ti_uint = std::get<0>(traj.front());
@@ -50,10 +50,12 @@ public:
         transf_sys().set_initial_pos_state(std::get<1>(traj.front()));
         transf_sys().set_pos_goal_state(std::get<1>(traj.back()));
 
-        const Eigen::VectorXd s_coords = coord_sys().compute_coordinate_vec(times);
-        const Eigen::MatrixXd f_des =
-                transf_sys().evaluate_forcing_term_matrix(traj, apply_distance_scaling);
+        if (apply_distance_scaling) transf_sys().enable_force_scaling();
+        else transf_sys().disable_force_scaling();
 
+        const Eigen::VectorXd s_coords = coord_sys().compute_coordinate_vec(times);
+        Eigen::MatrixXd       f_des = transf_sys().evaluate_forcing_term_matrix(traj);
+        for (long i = 0; i < traj.size(); ++i) { f_des.row(i) /= s_coords(i); }
         learnable_func().learn(s_coords, f_des);
     }
 
@@ -62,7 +64,8 @@ public:
             const StampedSample_t& start_pos,
             const StampedSample_t& goal,
             const double&          T,
-            const double&          dt
+            const double&          dt,
+            const double&          traj_T
     ) {
         time_axis().reset_time();
         time_axis().set_period(T);
@@ -80,6 +83,9 @@ public:
             fmt::println(" Pos: {}", dmp::to::string(transf_sys().get_pos_state()));
             fmt::println(" Vel: {}", dmp::to::string(transf_sys()._z));
             fmt::println(" Acc: {}", dmp::to::string(transf_sys()._dz_dt));
+
+        while (_time_axis.get_time() < traj_T) {
+            // fmt::println("====== TIME {} ========", time_axis().get_time());
             traj.emplace_back(
                     time_axis().time_as_timestamp(),
                     transf_sys().get_pos_state(),
@@ -89,11 +95,9 @@ public:
             const double s = coord_sys().get_coordinate();
             coord_sys().step();
             auto f = learnable_func().evaluate(s);
-            fmt::println(" Coord s: {}", s);
-            fmt::println(" Force: {}", dmp::to::string(f));
-            transf_sys().set_forcing_term(learnable_func().evaluate(s));
-            transf_sys().step();
 
+            transf_sys().set_forcing_term(learnable_func().evaluate(s) * s);
+            transf_sys().step();
             time_axis().step();
         }
         return traj;

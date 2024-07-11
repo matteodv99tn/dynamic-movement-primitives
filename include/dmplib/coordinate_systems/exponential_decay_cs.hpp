@@ -14,7 +14,7 @@ protected:
 public:
     ExponentialDecayCs(
             TimeAxis* time_axis,
-            const double&       alpha = 1.0 / 5.0  // NOLINT
+            const double&       alpha = 5.0  // NOLINT
     );
 
     [[nodiscard]] double

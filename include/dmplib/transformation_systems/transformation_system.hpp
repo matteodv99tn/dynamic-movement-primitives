@@ -32,7 +32,7 @@ public:
 
     void
     set_pos_goal_state(const Domain_t& pos) {
-        _y0 = pos;
+        _g = pos;
     }
 
     void
@@ -43,6 +43,16 @@ public:
     [[nodiscard]] Domain_t
     get_pos_state() const {
         return _y;
+    }
+
+    [[nodiscard]] Domain_t 
+    get_goal() const {
+        return _g;
+    }
+
+    [[nodiscard]] Domain_t 
+    get_initial_pos_state() const {
+        return _y0;
     }
 
     [[nodiscard]] double
