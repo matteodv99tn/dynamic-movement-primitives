@@ -34,12 +34,11 @@ public:
         _use_normalisation = false;
     }
 
-    [[nodiscard]]
-    Tangent_t
+    [[nodiscard]] Tangent_t
     evaluate(const double& arg) {
         Tangent_t res;
-        for (std::size_t i = 0; i < w_count; i++)
-            res(i) = _basis.evaluate(arg, _ws[i], _use_normalisation);
+        auto      b = _basis.evaluate(arg, true);
+        for (std::size_t i = 0; i < w_count; i++) { res(i) = b.transpose() * _ws[i]; }
         return res;
     }
 
@@ -58,6 +57,11 @@ public:
         for (long i = 0; i < w_count; i++) {
             _ws[i] = qr_factorisation.solve(desired_function.col(i));
         }
+    }
+
+    void
+    set_function_centers(const std::vector<double>& c) {
+        _basis.set_function_centers(c);
     }
 
 private:
