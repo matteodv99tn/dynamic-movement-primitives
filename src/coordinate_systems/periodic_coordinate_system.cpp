@@ -7,7 +7,7 @@
 
 using Pcs_t = dmp::PeriodicCs;
 
-Pcs_t::PeriodicCs(dmp::TimeAxis::Reference time_axis) :
+Pcs_t::PeriodicCs(dmp::TimeAxis* time_axis) :
         CoordinateSystem<Pcs_t, PERIODIC>::CoordinateSystem(time_axis, 0.0) {
 }
 

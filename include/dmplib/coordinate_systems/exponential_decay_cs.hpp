@@ -13,7 +13,7 @@ protected:
 
 public:
     ExponentialDecayCs(
-            TimeAxis::Reference time_axis,
+            TimeAxis* time_axis,
             const double&       alpha = 1.0 / 5.0  // NOLINT
     );
 

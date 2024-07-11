@@ -43,6 +43,11 @@ public:
     }
 
     void
+    set_posix_period(const std::size_t& T) {
+        set_period(static_cast<double>(T * 1e-9));
+    }
+
+    void
     set_integration_timestep(const double& dt) {
         _timestep = dt;
     }
@@ -67,7 +72,8 @@ public:
         return static_cast<TimeStamp_t>(_time * s_to_ns);
     }
 
-    void step() {
+    void
+    step() {
         _time += _timestep;
     }
 

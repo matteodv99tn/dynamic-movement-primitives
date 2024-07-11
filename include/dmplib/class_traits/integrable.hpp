@@ -11,13 +11,10 @@ namespace dmp {
 
 template <typename Derived>
 class Integrable {
-private:
-    TimeAxis::Reference _time_axis;
-
 public:
     using StepHandleFun_t = std::function<void(void)>;
 
-    Integrable(TimeAxis::Reference time_axis) : _time_axis(time_axis) {};
+    Integrable(TimeAxis* time_axis) : _time_axis(time_axis) {};
 
     // This function requires the derived class to implement
     // void step_impl();
@@ -28,12 +25,12 @@ public:
 
     [[nodiscard]] const TimeAxis&
     time_axis() const {
-        return _time_axis.get();
+        return *_time_axis;
     }
 
     [[nodiscard]] TimeAxis&
     time_axis() {
-        return _time_axis.get();
+        return *_time_axis;
     }
 
     StepHandleFun_t
@@ -56,6 +53,9 @@ protected:
     t() const {
         return time_axis().get_time();
     }
+
+private:
+    TimeAxis* const _time_axis;
 };
 
 }  // namespace dmp

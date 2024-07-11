@@ -52,9 +52,9 @@ private:
 
 public:
     SecondOrderTs(
-            ::dmp::TimeAxis::Reference time_axis,
-            const double&              alpha = 48.0,       // NOLINT: magic numbers
-            const double&              beta  = 48.0 / 4.0  // NOLINT: magic numbers
+            ::dmp::TimeAxis* time_axis,
+            const double&    alpha = 48.0,       // NOLINT: magic numbers
+            const double&    beta  = 48.0 / 4.0  // NOLINT: magic numbers
     ) :
             dmp::transformationsystem::TransformationSystem<SecondOrderTs<M>, M>(
                     time_axis
@@ -129,7 +129,7 @@ private:
         using ::dmp::riemannmanifold::exponential_map;
         const Tangent_t pos_term = logarithmic_map(_g, _y);
         // _dz_dt                  = _alpha * (2 * _beta * pos_term - _z) + this->_f;
-        _dz_dt                = _alpha * (_beta * pos_term - _z) + this->_f;
+        _dz_dt = _alpha * (_beta * pos_term - _z) + this->_f;
         _z += _dz_dt * dt() / T();
         _y = exponential_map(_y, _z * dt());
     }

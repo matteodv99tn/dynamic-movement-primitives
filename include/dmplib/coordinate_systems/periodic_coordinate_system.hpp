@@ -7,7 +7,7 @@ namespace dmp {
 
 class PeriodicCs : public CoordinateSystem<PeriodicCs, PERIODIC> {
 public:
-    PeriodicCs(TimeAxis::Reference time_axis);
+    PeriodicCs(TimeAxis* time_axis);
 
     [[nodiscard]] double get_Omega(  // NOLINT: desired to have Omega with capital "O"
     ) const;

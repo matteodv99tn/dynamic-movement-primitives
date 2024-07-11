@@ -45,7 +45,8 @@ public:
         for (std::size_t i = 0; i < traj.size(); ++i)
             times[i] = (std::get<0>(traj[i]) - ti_uint) * ts_to_s;
 
-        set_period((tf_uint - ti_uint) * ts_to_s);  // NOLINT
+        time_axis().set_posix_period(tf_uint - ti_uint);  // NOLINT
+
         transf_sys().set_initial_pos_state(std::get<1>(traj.front()));
         transf_sys().set_pos_goal_state(std::get<1>(traj.back()));
 
@@ -152,6 +153,11 @@ public:
     [[nodiscard]] TimeAxis&
     time_axis() {
         return _time_axis;
+    }
+
+    [[nodiscard]] TimeAxis* 
+    time_axis_ptr() {
+        return &_time_axis;
     }
 
 

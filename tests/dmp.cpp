@@ -29,8 +29,8 @@ main() {
     Dmp_t dmp;
 
     dmp.set_period(2.0);
-    dmp.initialise_coordinate_system(dmp.time_axis());
-    dmp.initialise_transformation_system(dmp.time_axis());
+    dmp.initialise_coordinate_system(dmp.time_axis_ptr());
+    dmp.initialise_transformation_system(dmp.time_axis_ptr());
 
     const std::size_t         n_basis = 25;  // NOLINT
     const std::vector<double> c = dmp.coord_sys().distribution_on_support(n_basis);

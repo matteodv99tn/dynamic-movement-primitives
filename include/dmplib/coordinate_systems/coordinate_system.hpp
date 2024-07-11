@@ -22,7 +22,7 @@ public:
     using Support_t                          = std::tuple<double, double>;
     static constexpr RepresentationType type = Rep_Type;
 
-    CoordinateSystem(TimeAxis::Reference& time_axis, const double& initial_value = 1) :
+    CoordinateSystem(TimeAxis* time_axis, const double& initial_value = 1) :
             Integrable<Derived>(time_axis),
             _x(initial_value),
             _support(

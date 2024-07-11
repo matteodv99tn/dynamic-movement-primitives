@@ -18,7 +18,7 @@ public:
     using Domain_t  = M;
     using Tangent_t = dmp::riemannmanifold::tangent_space_t<Domain_t>;
 
-    TransformationSystem(::dmp::TimeAxis::Reference time_axis) :
+    TransformationSystem(::dmp::TimeAxis* time_axis) :
             Integrable<TransformationSystem<Der, M>>(time_axis),
             _y(dmp::riemannmanifold::default_constructor<Domain_t>()),   // NOLINT
             _y0(dmp::riemannmanifold::default_constructor<Domain_t>()),  // NOLINT

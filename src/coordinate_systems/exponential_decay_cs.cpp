@@ -13,9 +13,9 @@ namespace rs = ranges;
 namespace rv = ranges::views;
 
 using Edcs_t   = dmp::ExponentialDecayCs;
-using TimeAxis = dmp::TimeAxis; // NOLINT
+using TimeAxis = dmp::TimeAxis;  // NOLINT
 
-Edcs_t::ExponentialDecayCs(TimeAxis::Reference time_axis, const double& alpha) :
+Edcs_t::ExponentialDecayCs(TimeAxis* time_axis, const double& alpha) :
         CoordinateSystem(time_axis, 1), _alpha(alpha) {
 }
 
