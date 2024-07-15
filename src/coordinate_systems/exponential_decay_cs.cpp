@@ -27,7 +27,7 @@ Edcs_t::step_impl() {
 std::vector<double>
 Edcs_t::distribution_on_support_impl(const std::size_t& size) const {
     auto ci_formula = [a = _alpha, n = static_cast<double>(size)](const int& i
-                      ) -> double { return std::exp((-a * i - 1.0) / (n - 1.0)); };
+                      ) -> double { return std::exp(-a * i / (n - 1.0)); };
 
     std::vector<double> c(size);
     rs::copy(rv::iota(0) | rv::take(size) | rv::transform(ci_formula), c.data());

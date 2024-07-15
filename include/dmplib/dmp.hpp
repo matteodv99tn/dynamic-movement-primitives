@@ -11,6 +11,10 @@
 #include "dmplib/manifolds/se3_manifold.hpp"
 #include "dmplib/time_axis.hpp"
 #include "fmt/ostream.h"
+#include "matplotlibcpp.h"
+#include "transformation_systems/modified_second_order_tf.hpp"
+
+namespace plt = matplotlibcpp;
 
 namespace dmp {
 
@@ -54,7 +58,15 @@ public:
         else transf_sys().disable_force_scaling();
 
         const Eigen::VectorXd s_coords = coord_sys().compute_coordinate_vec(times);
-        Eigen::MatrixXd       f_des = transf_sys().evaluate_forcing_term_matrix(traj);
+
+        Eigen::MatrixXd f_des;
+        if constexpr (std::is_same_v<
+                    TransformationSystem_t,
+                    dmp::transformationsystem::ModifiedSecondOrderTs<Manifold>>) {
+            f_des = transf_sys().evaluate_forcing_term_matrix(traj, s_coords);
+        } else {
+            f_des = transf_sys().evaluate_forcing_term_matrix(traj);
+        }
         for (long i = 0; i < traj.size(); ++i) { f_des.row(i) /= s_coords(i); }
         learnable_func().learn(s_coords, f_des);
     }
@@ -159,7 +171,7 @@ public:
         return _time_axis;
     }
 
-    [[nodiscard]] TimeAxis* 
+    [[nodiscard]] TimeAxis*
     time_axis_ptr() {
         return &_time_axis;
     }

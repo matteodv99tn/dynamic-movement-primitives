@@ -10,11 +10,21 @@
 namespace dmp::riemannmanifold {
 
 template <int N>
-using Vec_t = Eigen::Matrix<double, N, 1>;
+using VecN_t = Eigen::Matrix<double, N, 1>;
 
-using Vec2_t       = Vec_t<2>;  // NOLINT: are not magic numbers
-using Vec3_t       = Vec_t<3>;  // NOLINT
-using Vec6_t       = Vec_t<6>;  // NOLINT
+template <int N>
+using MatN_t = Eigen::Matrix<double, N, N>;
+
+using Vec2_t       = VecN_t<2>;  // NOLINT: are not magic numbers
+using Vec3_t       = VecN_t<3>;  // NOLINT
+using Vec4_t       = VecN_t<4>;  // NOLINT
+using Vec5_t       = VecN_t<5>;  // NOLINT
+using Vec6_t       = VecN_t<6>;  // NOLINT
+using Mat2_t       = MatN_t<2>;  // NOLINT
+using Mat3_t       = MatN_t<3>;  // NOLINT
+using Mat4_t       = MatN_t<4>;  // NOLINT
+using Mat5_t       = MatN_t<5>;  // NOLINT
+using Mat6_t       = MatN_t<6>;  // NOLINT
 using Quaternion_t = Eigen::Quaterniond;
 
 template <typename T>
@@ -22,14 +32,20 @@ struct tangent_space_dimension;
 
 template <typename T>
 struct tangent_space {
-    using type = Eigen::Matrix<double, tangent_space_dimension<T>::value, 1>;  // NOLINT
+    using type = VecN_t<tangent_space_dimension<T>::value>;  // NOLINT
 };
 
 template <typename T>
 using tangent_space_t = typename tangent_space<T>::type;  // NOLINT
 
 template <typename T>
+using squared_tangent_space_t = MatN_t<tangent_space_dimension<T>::value>;
+
+template <typename T>
 constexpr T default_constructor();
+
+template <typename T>
+struct constants;
 
 
 }  // namespace dmp::riemannmanifold

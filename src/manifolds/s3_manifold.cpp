@@ -7,6 +7,8 @@
 
 namespace rm = dmp::riemannmanifold;
 
+using rm::Quaternion_t;
+
 rm::Vec3_t
 rm::logarithmic_map_single(Quaternion_t q) {  // NOLINT
     if (q.w() < 0) q.coeffs() = -q.coeffs();

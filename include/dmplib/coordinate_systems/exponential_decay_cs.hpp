@@ -27,6 +27,14 @@ public:
         _alpha = alpha;
     }
 
+    double get_T() const {
+        return time_axis().get_period();
+    }
+    
+    double get_dt() const {
+        return time_axis().get_timestep();
+    }
+
 protected:
     // CRTP traits definition
     friend class Integrable<ExponentialDecayCs>;

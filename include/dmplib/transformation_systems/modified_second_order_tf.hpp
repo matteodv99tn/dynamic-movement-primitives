@@ -1,5 +1,5 @@
-#ifndef DMPLIB_SECOND_ORDER_TRANSFORMATION_SYSTEM_HPP
-#define DMPLIB_SECOND_ORDER_TRANSFORMATION_SYSTEM_HPP
+#ifndef DMPLIB_MODIFIED_SECOND_ORDER_TRANSFORMATION_SYSTEM_HPP
+#define DMPLIB_MODIFIED_SECOND_ORDER_TRANSFORMATION_SYSTEM_HPP
 
 #include <Eigen/Dense>
 
@@ -15,9 +15,9 @@
 namespace dmp::transformationsystem {
 
 template <dmp::riemannmanifold::concepts::riemann_manifold M>
-class SecondOrderTs : public TransformationSystem<SecondOrderTs<M>, M> {
+class ModifiedSecondOrderTs : public TransformationSystem<ModifiedSecondOrderTs<M>, M> {
 private:
-    using Ts        = TransformationSystem<SecondOrderTs<M>, M>;  // NOLINT: alias case
+    using Ts        = TransformationSystem<ModifiedSecondOrderTs<M>, M>;  // NOLINT: alias case
     using Domain_t  = M;
     using Tangent_t = dmp::riemannmanifold::tangent_space_t<M>;
 
@@ -25,77 +25,65 @@ private:
     using Ts::_f;
     using Ts::_g;
     using Ts::_y;
+    using Ts::_y0;
     using Ts::delta_pos_gain;
     using Ts::dt;
     using Ts::T;
 
-    template <int Offset, typename Tpl>
-    [[nodiscard]] Tangent_t
-    forcing_term_impl(const Tpl& sample) const {
-        using ::dmp::riemannmanifold::logarithmic_map;
-        const Tangent_t acc_term = std::pow(T(), 2.0) * std::get<2 + Offset>(sample);
-        const Tangent_t pos_term = logarithmic_map(std::get<0 + Offset>(sample), _g);
-        const Tangent_t vel_term = T() * std::get<1 + Offset>(sample);
-        const auto log_coeff = ::dmp::riemannmanifold::constants<M>::log_coefficient();
-        Tangent_t  forcing =
-                acc_term - _alpha * (_beta * log_coeff * pos_term + vel_term);
-
-        if (_consider_delta_gain) {
-            const Tangent_t gain = delta_pos_gain();
-            // forcing.array() = forcing.array() / delta_pos_gain().array();
-            for (long i = 0; i < forcing.rows(); ++i) {
-                double f   = forcing(i);
-                forcing[i] = f / gain(i);
-            }
-        }
-        return forcing;
-    }
-
-
 public:
-    SecondOrderTs(
-            ::dmp::TimeAxis* time_axis,
-            const double&    alpha        = 48.0,        // NOLINT: magic numbers
-            const double&    beta         = 48.0 / 4.0,  // NOLINT: magic numbers
-            const bool&      fd_uses_gain = true
+    ModifiedSecondOrderTs(
+            ::dmp::TimeAxis*    time_axis,
+            const double* const s,
+            const double&       alpha        = 48.0,        // NOLINT: magic numbers
+            const double&       beta         = 48.0 / 4.0,  // NOLINT: magic numbers
+            const bool&         fd_uses_gain = true
 
     ) :
-            dmp::transformationsystem::TransformationSystem<SecondOrderTs<M>, M>(
-                    time_axis
-            ),
             _alpha(alpha),
             _beta(beta),
-            _consider_delta_gain(fd_uses_gain) {};  // NOLINT
+            _consider_delta_gain(fd_uses_gain),
+            _s(s),
+            dmp::transformationsystem::TransformationSystem<ModifiedSecondOrderTs<M>, M>(
+                    time_axis
+            ){};  // NOLINT
 
     [[nodiscard]] Tangent_t
-    evaluate_forcing_term(const dmp::PosVelAccSample_t<M>& sample) const {
-        return forcing_term_impl<0>(sample);
+    evaluate_forcing_term(
+            const dmp::PosVelAccSample_t<M>& sample, const double* const s = nullptr
+    ) const {
+        return forcing_term_impl<0>(sample, s);
     }
 
     [[nodiscard]] Tangent_t
-    evaluate_forcing_term(const dmp::StampedPosVelAccSample_t<M>& sample) const {
-        return forcing_term_impl<1>(sample);
+    evaluate_forcing_term(
+            const dmp::StampedPosVelAccSample_t<M>& sample,
+            const double* const                     s = nullptr
+    ) const {
+        return forcing_term_impl<1>(sample, s);
     }
 
     template <typename Tpl>
     [[nodiscard]] std::vector<Tangent_t>
-    evaluate_forcing_term(const std::vector<Tpl>& traj) const {
+    evaluate_forcing_term(const std::vector<Tpl>& traj, const double* const s = nullptr)
+            const {
         using ::ranges::views::transform;
-        return traj | transform([this](const auto& sample) -> Tangent_t {
-                   return evaluate_forcing_term(sample);
+        return traj | transform([this, s](const auto& sample) -> Tangent_t {
+                   return evaluate_forcing_term(sample, s);
                })
                | ::ranges::to_vector;
     }
 
     template <typename Tpl>
     Eigen::MatrixXd
-    evaluate_forcing_term_matrix(const std::vector<Tpl>& traj) const {
+    evaluate_forcing_term_matrix(const std::vector<Tpl>& traj, const Eigen::VectorXd s)
+            const {
         static_assert(Tangent_t::RowsAtCompileTime != -1);
         Eigen::MatrixXd res(traj.size(), Tangent_t::RowsAtCompileTime);
 
         for (std::size_t i = 0; i < traj.size(); ++i) {
             res.row(i) = evaluate_forcing_term(  // NOLINT: narrowing conversion on i
-                    traj[i]
+                    traj[i],
+                    &s(i)
             );
         }
 
@@ -120,15 +108,45 @@ public:
 
 private:
     // friend class Integrable<SecondOrderTf<M>>;
-    friend class TransformationSystem<SecondOrderTs<M>, M>;
+    friend class TransformationSystem<ModifiedSecondOrderTs<M>, M>;
+
+    template <int Offset, typename Tpl>
+    [[nodiscard]] Tangent_t
+    forcing_term_impl(const Tpl& sample, const double* const s) const {
+        double s_value = (s != nullptr) ? *s : *_s;
+        using ::dmp::riemannmanifold::logarithmic_map;
+        const M&         y   = std::get<0 + Offset>(sample);
+        const Tangent_t& yd  = std::get<1 + Offset>(sample);
+        const Tangent_t& ydd = std::get<2 + Offset>(sample);
+        const auto log_coeff = ::dmp::riemannmanifold::constants<M>::log_coefficient();
+
+        const Tangent_t log_gy  = log_coeff * logarithmic_map(y, _g);
+        const Tangent_t log_gy0 = log_coeff * logarithmic_map(_y0, _g);
+
+        Tangent_t forcing = (T() * T() * ydd / _alpha + T() * yd) / _beta - log_gy
+                            + log_gy0 * s_value;
+
+        if (_consider_delta_gain) {
+            const Tangent_t gain = delta_pos_gain();
+            // forcing.array() = forcing.array() / delta_pos_gain().array();
+            for (long i = 0; i < forcing.rows(); ++i) {
+                double f   = forcing(i);
+                forcing[i] = f / gain(i);
+            }
+        }
+        return forcing;
+    }
 
     void
     step_impl() {
         using ::dmp::riemannmanifold::exponential_map;
+        using ::dmp::riemannmanifold::logarithmic_map;
+
         const auto log_coeff = ::dmp::riemannmanifold::constants<M>::log_coefficient();
         const auto exp_coeff = ::dmp::riemannmanifold::constants<M>::exp_coefficient();
 
-        const Tangent_t pos_term = logarithmic_map(_y, _g);
+        const Tangent_t log_gy  = log_coeff * logarithmic_map(_y, _g);
+        const Tangent_t log_gy0 = log_coeff * logarithmic_map(_y0, _g);
         // _dz_dt                  = _alpha * (2 * _beta * pos_term - _z) + this->_f;
         Tangent_t forcing = this->_f;
         if (_consider_delta_gain) {
@@ -137,7 +155,7 @@ private:
                 forcing(i) *= gain(i);
         }
 
-        _dz_dt = _alpha * (_beta * log_coeff * pos_term - _z) + forcing;
+        _dz_dt = _alpha * (_beta * (log_gy - log_gy0 * (*_s) + forcing) - _z);
         _z += _dz_dt * dt() / T();
         _y = exponential_map(_y, exp_coeff * _z * dt() / T());
     }
@@ -146,9 +164,10 @@ private:
     double _beta;
 
 public:
-    Tangent_t _z;
-    Tangent_t _dz_dt;
-    bool      _consider_delta_gain;
+    Tangent_t           _z;
+    Tangent_t           _dz_dt;
+    bool                _consider_delta_gain;
+    const double* const _s;
 };
 
 
@@ -242,4 +261,4 @@ protected:
 }  // namespace dmp
 */
 
-#endif  // DMPLIB_SECOND_ORDER_TRANSFORMATION_SYSTEM_HPP
+#endif  // DMPLIB_MODIFIED_SECOND_ORDER_TRANSFORMATION_SYSTEM_HPP

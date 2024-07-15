@@ -64,6 +64,10 @@ public:
         _basis.set_function_centers(c);
     }
 
+    const Basis& basis() const {
+        return _basis;
+    }
+
 private:
     static constexpr int w_count =
             dmp::riemannmanifold::tangent_space_dimension<M>::value;

@@ -6,11 +6,14 @@
 #include "dmplib/manifolds/aliases.hpp"
 #include "dmplib/manifolds/se3_manifold.hpp"
 #include "dmplib/time_axis.hpp"
+#include "dmplib/transformation_systems/modified_second_order_tf.hpp"
 #include "dmplib/transformation_systems/second_order_tf.hpp"
 #include "dmplib/transformation_systems/transformation_system.hpp"
 
 // clang-format off
 #include "dmplib/dmp.hpp"
+
+// #define USE_MODIFIED_SYSTEM
 
 
 using dmp::ExponentialDecayCs;
@@ -18,19 +21,27 @@ using dmp::learnablefunction::GaussianBf;
 using dmp::learnablefunction::WeightedBasisFunction;
 using dmp::riemannmanifold::SE3;
 using dmp::transformationsystem::SecondOrderTs;
+using dmp::transformationsystem::ModifiedSecondOrderTs;
 
 using Func_t = WeightedBasisFunction<GaussianBf, SE3>;
 
+#ifdef USE_MODIFIED_SYSTEM
+using Dmp_t = dmp::Dmp<SE3, ExponentialDecayCs, ModifiedSecondOrderTs<SE3>, Func_t>;
+#else
 using Dmp_t = dmp::Dmp<SE3, ExponentialDecayCs, SecondOrderTs<SE3>, Func_t>;
+#endif 
 
 int
 main() {
-
     Dmp_t dmp;
 
     dmp.set_period(2.0);
     dmp.initialise_coordinate_system(dmp.time_axis_ptr());
+#ifdef USE_MODIFIED_SYSTEM
+    dmp.initialise_transformation_system(dmp.time_axis_ptr(), dmp.coord_sys().get_coordinate_ptr());
+#else
     dmp.initialise_transformation_system(dmp.time_axis_ptr());
+#endif
 
     const std::size_t         n_basis = 25;  // NOLINT
     const std::vector<double> c = dmp.coord_sys().distribution_on_support(n_basis);
@@ -49,7 +60,10 @@ main() {
         traj.push_back(sample);
     }
 
+#ifdef USE_MODIFIED_SYSTEM
     dmp.batch_learn(traj);
+#else
+#endif
 
     [[maybe_unused]] auto rec = dmp.integrate_trajectory(traj.front(), traj.back(), 5.0, 0.01, 8.0);
 

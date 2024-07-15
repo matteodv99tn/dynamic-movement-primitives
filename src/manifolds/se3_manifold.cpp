@@ -2,8 +2,6 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <Eigen/src/Geometry/Quaternion.h>
-#include <utility>
 
 #include "dmplib/manifolds/rn_manifold.hpp"
 #include "dmplib/manifolds/s3_manifold.hpp"

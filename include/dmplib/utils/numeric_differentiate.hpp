@@ -3,6 +3,7 @@
 
 #include "dmplib/manifolds/aliases.hpp"
 #include "dmplib/manifolds/concepts.hpp"
+#include "dmplib/manifolds/riemann_manifold.hpp"
 
 namespace dmp::utils {
 
@@ -22,7 +23,8 @@ differentiate(const StampedPosTrajectory_t<T>& traj) {
             const T&     curr_pt = std::get<1>(out[i]);
             const T&     prev_pt = std::get<1>(out[i - 1]);
             const double dt = (std::get<0>(out[i]) - std::get<0>(out[i - 1])) * 1e-9;
-            std::get<2>(out[i]) = logarithmic_map(prev_pt, curr_pt) / dt;
+            const auto   k  = dmp::riemannmanifold::constants<T>::log_coefficient();
+            std::get<2>(out[i]) = k * logarithmic_map(prev_pt, curr_pt) / dt;
         }
     }
     return out;

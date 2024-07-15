@@ -78,6 +78,10 @@ public:
         return coords;
     }
 
+    [[nodiscard]] const double* get_coordinate_ptr() const {
+        return &_x;
+    }
+
 protected:
     using Integrable<Derived>::time_axis;
 
