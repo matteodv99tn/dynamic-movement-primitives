@@ -17,22 +17,11 @@ Gbf_t::GaussianBf(
         const std::size_t& basis_size, const std::vector<double>& function_centers
 ) :
         BasisFunction<GaussianBf>(basis_size, function_centers), _h(_basis_size) {
-    std::cout << "Gaussian Basis function constructor" << std::endl;
-
-
-    for(std::size_t i{0}; i < _basis_size - 1; ++i) {
-        const double diff  = _c[i+1] - _c[i];
-        _h[i] = 1 / (diff * diff);
+    for (std::size_t i{0}; i < _basis_size - 1; ++i) {
+        const double diff = _c[i + 1] - _c[i];
+        _h[i]             = 1 / (diff * diff);
     }
     _h.back() = _h[_basis_size - 2];
-
-    std::cout << "Provided centers: " << std::endl << "   ";
-    for (double c : _c) std::cout << c << " ";
-    std::cout << std::endl;
-
-    std::cout << "Computed widths: " << std::endl << "   ";
-    for (double h : _h) std::cout << h << " ";
-    std::cout << std::endl;
 };
 
 void
