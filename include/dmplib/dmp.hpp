@@ -1,20 +1,16 @@
 #ifndef DMPLIB_DMP_HPP
 #define DMPLIB_DMP_HPP
 
-#include <functional>
-#include <iostream>
+// #include <functional>
+// #include <iostream>
 #include <memory>
 #include <stdexcept>
 
-#include "dmplib/data_handler/conversions.hpp"
+// #include "dmplib/data_handler/conversions.hpp"
 #include "dmplib/manifolds/aliases.hpp"
-#include "dmplib/manifolds/se3_manifold.hpp"
+// #include "dmplib/manifolds/se3_manifold.hpp"
 #include "dmplib/time_axis.hpp"
-#include "fmt/ostream.h"
-#include "matplotlibcpp.h"
 #include "transformation_systems/modified_second_order_tf.hpp"
-
-namespace plt = matplotlibcpp;
 
 namespace dmp {
 
@@ -34,7 +30,7 @@ public:
 
     static constexpr double ts_to_s = 1e-9;
 
-    Dmp() : _cs(nullptr), _ts(nullptr), _fun(nullptr){};
+    Dmp() : _cs(nullptr), _ts(nullptr), _fun(nullptr) {};
 
     void
     batch_learn(
@@ -61,8 +57,9 @@ public:
 
         Eigen::MatrixXd f_des;
         if constexpr (std::is_same_v<
-                    TransformationSystem_t,
-                    dmp::transformationsystem::ModifiedSecondOrderTs<Manifold>>) {
+                              TransformationSystem_t,
+                              dmp::transformationsystem::ModifiedSecondOrderTs<
+                                      Manifold>>) {
             f_des = transf_sys().evaluate_forcing_term_matrix(traj, s_coords);
         } else {
             f_des = transf_sys().evaluate_forcing_term_matrix(traj);
@@ -90,14 +87,7 @@ public:
 
         StampedTrajectory_t traj;
 
-        while (_time_axis.get_time() < T) {
-            fmt::println("====== TIME {} ========", time_axis().get_time());
-            fmt::println(" Pos: {}", dmp::to::string(transf_sys().get_pos_state()));
-            fmt::println(" Vel: {}", dmp::to::string(transf_sys()._z));
-            fmt::println(" Acc: {}", dmp::to::string(transf_sys()._dz_dt));
-
         while (_time_axis.get_time() < traj_T) {
-            // fmt::println("====== TIME {} ========", time_axis().get_time());
             traj.emplace_back(
                     time_axis().time_as_timestamp(),
                     transf_sys().get_pos_state(),
@@ -106,9 +96,9 @@ public:
             );
             const double s = coord_sys().get_coordinate();
             coord_sys().step();
-            auto f = learnable_func().evaluate(s);
+            const auto f = learnable_func().evaluate(s);
 
-            transf_sys().set_forcing_term(learnable_func().evaluate(s) * s);
+            transf_sys().set_forcing_term(f * s);
             transf_sys().step();
             time_axis().step();
         }
