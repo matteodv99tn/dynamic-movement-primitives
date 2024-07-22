@@ -15,7 +15,14 @@ struct SE3 {  // NOLINT: naming convention
     SE3(Vec3_t       position    = Vec3_t::Zero(),
         Quaternion_t orientation = Quaternion_t::Identity());
 
+    SE3(const Eigen::Matrix4d& homog_transform);
+
+    SE3(const Eigen::Affine3d& transform);
+
     bool operator==(const SE3& other) const;
+
+    [[nodiscard]] Eigen::Matrix4d as_homogeneous_transformation() const;
+    [[nodiscard]] Eigen::Affine3d as_affine_transform() const;
 };
 
 template <>
